@@ -1,0 +1,21 @@
+---
+- name: Install Homebrew Formulae
+  when: ansible_os_family == 'Darwin'
+  community.general.homebrew:
+    update_homebrew: true
+    state: present
+    name: "{{ brew_formula_packages }}"
+
+- name: Install Homebrew Casks
+  when: ansible_os_family == 'Darwin'
+  community.general.homebrew_cask:
+    update_homebrew: true
+    state: present
+    name: "{{ brew_cask_packages }}"
+
+- name: Install Paru packages
+  when: ansible_os_family == 'Archlinux'
+  kewlfft.aur.aur:
+    use: paru
+    state: present
+    name: "{{ arch_packages }}"

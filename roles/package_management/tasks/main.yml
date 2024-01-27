@@ -1,0 +1,30 @@
+---
+- name: Check for "Homebrew"
+  when: ansible_os_family == 'Darwin'
+  register: brew_check
+  ansible.builtin.stat:
+    path: /opt/homebrew/bin/brew
+
+- name: Check for "Paru"
+  when: ansible_os_family == 'Archlinux'
+  register: paru_check
+  ansible.builtin.stat:
+    path: /usr/bin/paru
+
+- name: Install "Homebrew"
+  when:
+    - ansible_os_family == 'Darwin'
+    - not brew_check.stat.exists
+  ansible.builtin.shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+- name: Install "Paru"
+  when:
+    - ansible_os_family == 'Archlinux'
+    - not paru_check.stat.exists
+  kewlfft.aur.aur:
+    use: makepkg
+    state: present
+    name: paru-bin
+
+- name: Install Packages
+  include_tasks: packages.yml

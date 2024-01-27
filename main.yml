@@ -1,0 +1,6 @@
+---
+- name: System Setup
+  hosts: all
+  roles:
+    - package_management
+    - ssh

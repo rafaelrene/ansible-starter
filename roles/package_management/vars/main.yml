@@ -1,0 +1,22 @@
+---
+brew_formula_packages:
+  - fd
+  - lazygit
+  - neovim
+  - openssh
+  - ripgrep
+  - tmux
+  - zsh
+
+brew_cask_packages:
+  - emacs
+
+arch_packages:
+  - core/openssh
+  - extra/emacs
+  - extra/fd
+  - extra/lazygit
+  - extra/neovim
+  - extra/ripgrep
+  - extra/tmux
+  - extra/zsh

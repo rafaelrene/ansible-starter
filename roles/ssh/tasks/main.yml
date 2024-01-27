@@ -1,0 +1,38 @@
+---
+- name: Check if SSH Keys are setup
+  register: ssh_folder_check
+  ansible.builtin.stat:
+    path: ~/.ssh
+
+- name: Copy SSH keys
+  when: not ssh_folder_check.stat.exists
+  become: true
+  become_user: "{{ ansible_user_id }}"
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/"
+    dest: ~/.ssh/
+    mode: u+rw
+    directory_mode: u+rwx
+    owner: "{{ ansible_user_id }}"
+
+- name: Set Permissions
+  become: true
+  become_user: "{{ ansible_user_id }}"
+  when: not ssh_folder_check.stat.exists
+  ansible.builtin.shell: |
+    chmod -R a-rwx,u=rwx ~/.ssh
+    chmod a-rwx,u=rwx ~/.ssh
+
+    exit 0
+
+- name: Add "bitbucket_work" SSH Key to agent
+  become: true
+  become_user: "{{ ansible_user_id }}"
+  when: not ssh_folder_check.stat.exists
+  ansible.builtin.command: ssh-add ~/.ssh/bitbucket_work
+
+- name: Add "personal" SSH Key to agent
+  become: true
+  become_user: "{{ ansible_user_id }}"
+  when: not ssh_folder_check.stat.exists
+  ansible.builtin.command: ssh-add ~/.ssh/personal
