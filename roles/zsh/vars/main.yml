@@ -1,8 +1,0 @@
----
-
-oh_my_zsh_install: true
-oh_my_zsh_write_zshrc: false
-oh_my_zsh_plugins:
-  - git
-  - zsh-autosuggestions
-  - shrink-path
