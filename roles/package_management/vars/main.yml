@@ -5,6 +5,7 @@ brew_formula_packages:
   - neovim
   - openssh
   - ripgrep
+  - tldr
   - tmux
   - zsh
 
@@ -18,5 +19,6 @@ arch_packages:
   - extra/lazygit
   - extra/neovim
   - extra/ripgrep
+  - extra/tldr
   - extra/tmux
   - extra/zsh
