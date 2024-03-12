@@ -1,0 +1,4 @@
+---
+- name: Install Oh My Zsh
+  ansible.builtin.include_role:
+    name: lorenzobettini.oh_my_zsh
