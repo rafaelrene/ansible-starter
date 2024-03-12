@@ -9,15 +9,13 @@
   ansible.builtin.file:
     src: "{{ role_path }}/files/.zshenv"
     dest: ~/.zshenv
+    mode: u=rwx,go-w
     state: link
-    mode: u=rw,g=r,o=r
-    owner: "{{ ansible_user_id }}"
 
 - name: Copy custom files
   when: not zsh_config_check.stat.exists
   ansible.builtin.file:
-    src: "{{ role_path }}/files/zsh/"
-    dest: ~/.config/zsh/
+    src: "{{ role_path }}/files/zsh"
+    dest: ~/.config/zsh
+    mode: u=rwx,go-w
     state: link
-    mode: u=rw,g=r,o=r
-    owner: "{{ ansible_user_id }}"

@@ -1,4 +1,4 @@
-eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
 [ -r "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 [ -r "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env"
