@@ -1,2 +1,23 @@
 ---
-- name: Configure Zsh
+- name: Check if ZSH is already setup
+  register: zsh_config_check
+  ansible.builtin.stat:
+    path: ~/.config/zsh
+
+- name: Copy custom ".zshenv"
+  when: not zsh_config_check.stat.exists
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/.zshenv"
+    dest: ~/.zshenv
+    state: link
+    mode: u=rw,g=r,o=r
+    owner: "{{ ansible_user_id }}"
+
+- name: Copy custom files
+  when: not zsh_config_check.stat.exists
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/zsh/"
+    dest: ~/.config/zsh/
+    state: link
+    mode: u=rw,g=r,o=r
+    owner: "{{ ansible_user_id }}"
