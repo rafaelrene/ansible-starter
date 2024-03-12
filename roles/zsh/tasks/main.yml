@@ -1,4 +1,9 @@
 ---
 - name: Install Oh My Zsh
-  ansible.builtin.include_role:
-    name: lorenzobettini.oh_my_zsh
+  role: gantsign.oh-my-zsh
+  oh_my_zsh_install: true
+  oh_my_zsh_write_zshrc: false
+  oh_my_zsh_plugins:
+    - git
+    - zsh-autosuggestions
+    - shrink-path

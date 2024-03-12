@@ -2,5 +2,15 @@
 - name: System Setup
   hosts: all
   roles:
-    - package_management
-    - ssh
+    # - package_management
+    # - ssh
+    # - zsh
+    - role: gantsign.oh-my-zsh
+      oh_my_zsh_install: true
+      oh_my_zsh_write_zshrc: false
+      oh_my_zsh_plugins:
+        - git
+        - zsh-autosuggestions
+        - shrink-path
+      users:
+        - username: "{{ ansible_user_id }}"
