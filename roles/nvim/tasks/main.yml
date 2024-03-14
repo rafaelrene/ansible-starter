@@ -1,0 +1,7 @@
+---
+- name: Setup neovim config
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/nvim"
+    dest: ~/.config/nvim
+    mode: u=rwx,go=r
+    state: link
