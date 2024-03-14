@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [[ $# -eq 1 ]]; then
+	selected=$1
+else
+	selected=$(git branch -a -l | awk '!/HEAD|\*/ {print}' | sed 's#remotes/origin/##g' | fzf)
+fi
+
+if [[ -z $selected ]]; then
+	exit 0
+fi
+
+git checkout $selected

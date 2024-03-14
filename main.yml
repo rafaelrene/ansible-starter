@@ -2,6 +2,7 @@
 - name: System Setup
   hosts: all
   roles:
+    - ssh
     - role: gantsign.oh-my-zsh
       oh_my_zsh_install: true
       oh_my_zsh_write_zshrc: false
@@ -12,5 +13,5 @@
       users:
         - username: "{{ ansible_user_id }}"
     - zsh
-    - ssh
+    - scripts
     - package_management
