@@ -6,6 +6,12 @@
     state: present
     name: "{{ brew_formula_packages }}"
 
+- name: Tap Homebrew Casks
+  when: ansible_os_family == 'Darwin'
+  community.general.homebrew_tap:
+    state: present
+    name: "{{ brew_casks }}"
+
 - name: Install Homebrew Casks
   when: ansible_os_family == 'Darwin'
   community.general.homebrew_cask:

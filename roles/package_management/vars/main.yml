@@ -9,8 +9,13 @@ brew_formula_packages:
   - tmux
   - zsh
 
+# NOTE: Use `,` to separate different casks to tap into
+brew_casks: homebrew/cask-fonts
+
 brew_cask_packages:
   - emacs
+  - homebrew/cask-fonts/font-jetbrains-mono
+  - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
 
 arch_packages:
   - core/openssh
@@ -22,3 +27,5 @@ arch_packages:
   - extra/tldr
   - extra/tmux
   - extra/zsh
+  - extra/ttf-jetbrains-mono
+  - extra/ttf-jetbrains-mono-nerd
