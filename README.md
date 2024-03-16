@@ -8,7 +8,6 @@ This is my starter repo where I have all the setup I need to get up and running 
 - [Git](https://git-scm.com) - Git is a free and open source distributed version
   control system designed to handle everything from small to very large projects
   with speed and efficiency.
-- [Github Desktop](https://desktop.github.com/) - Github desktop client
 - [Homebrew](https://brew.sh/) - The Missing Package Manager for macOS (or Linux)
 - [Ansible](https://ansible.com) - simple, agentless and powerful open source
   IT automation
