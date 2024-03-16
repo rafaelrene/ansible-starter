@@ -4,6 +4,7 @@
   roles:
     - ssh
     - zsh
+    - tmux
     - nvim
     - scripts
     - kitty

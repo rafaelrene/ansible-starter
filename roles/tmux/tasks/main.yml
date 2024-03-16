@@ -1,0 +1,7 @@
+---
+- name: Copy tmux config
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/tmux
+    mode: u=rwx,go=r
+    state: link
