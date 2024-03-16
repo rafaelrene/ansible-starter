@@ -1,6 +1,7 @@
 ---
 brew_formula_packages:
   - fd
+  - kitty
   - lazygit
   - neovim
   - openssh
@@ -21,11 +22,12 @@ arch_packages:
   - core/openssh
   - extra/emacs
   - extra/fd
+  - extra/kitty
   - extra/lazygit
   - extra/neovim
   - extra/ripgrep
   - extra/tldr
   - extra/tmux
-  - extra/zsh
   - extra/ttf-jetbrains-mono
   - extra/ttf-jetbrains-mono-nerd
+  - extra/zsh
