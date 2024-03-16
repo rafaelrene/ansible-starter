@@ -13,3 +13,6 @@
 **/foo.*
 **/*.log
 **/data
+
+# TMUX
+**/plugins
