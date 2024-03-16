@@ -3,6 +3,7 @@
 brew_casks: homebrew/cask-fonts
 
 brew_formula_packages:
+  - arc
   - fd
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
@@ -19,6 +20,7 @@ brew_formula_packages:
   - zsh
 
 arch_packages:
+  - aur/brave-bin
   - aur/volta-bin
   - core/openssh
   - extra/emacs
