@@ -7,6 +7,7 @@ brew_formula_packages:
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/emacs
+  - htop
   - kitty
   - lazygit
   - neovim
@@ -22,6 +23,7 @@ arch_packages:
   - core/openssh
   - extra/emacs
   - extra/fd
+  - extra/htop
   - extra/kitty
   - extra/lazygit
   - extra/neovim
