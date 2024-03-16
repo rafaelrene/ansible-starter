@@ -2,18 +2,17 @@
 - name: System Setup
   hosts: all
   roles:
-    # - ssh
-    # - role: gantsign.oh-my-zsh
-    #   oh_my_zsh_install: true
-    #   oh_my_zsh_write_zshrc: false
-    #   oh_my_zsh_plugins:
-    #     - git
-    #     - zsh-autosuggestions
-    #     - shrink-path
-    #   users:
-    #     - username: "{{ ansible_user_id }}"
-    # - zsh
-    # - nvim
-    # - scripts
-    # - kitty
-    # - package_management
+    - ssh
+    - role: gantsign.oh-my-zsh
+      oh_my_zsh_install: true
+      oh_my_zsh_write_zshrc: false
+      oh_my_zsh_plugins:
+        - git
+        - shrink-path
+      users:
+        - username: "{{ ansible_user_id }}"
+    - zsh
+    - nvim
+    - scripts
+    - kitty
+    - package_management

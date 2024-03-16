@@ -1,5 +1,6 @@
 # ZSH
 **/.zcompdump*
+**/.zsh_history
 **/.histfile
 
 # NVIM

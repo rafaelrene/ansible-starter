@@ -1,6 +1,12 @@
 ---
+# NOTE: Use `,` to separate different casks to tap into
+brew_casks: homebrew/cask-fonts
+
 brew_formula_packages:
   - fd
+  - homebrew/cask-fonts/font-jetbrains-mono
+  - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
+  - homebrew/cask/emacs
   - kitty
   - lazygit
   - neovim
@@ -9,14 +15,6 @@ brew_formula_packages:
   - tldr
   - tmux
   - zsh
-
-# NOTE: Use `,` to separate different casks to tap into
-brew_casks: homebrew/cask-fonts
-
-brew_cask_packages:
-  - emacs
-  - homebrew/cask-fonts/font-jetbrains-mono
-  - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
 
 arch_packages:
   - core/openssh

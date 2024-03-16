@@ -9,7 +9,7 @@
   ansible.builtin.file:
     src: "{{ role_path }}/files/.zshenv"
     dest: ~/.zshenv
-    mode: u=rwx,go-w
+    mode: u=rwx,go=r
     state: link
 
 - name: Copy custom files
@@ -17,5 +17,5 @@
   ansible.builtin.file:
     src: "{{ role_path }}/files/zsh"
     dest: ~/.config/zsh
-    mode: u=rwx,go-w
+    mode: u=rwx,go=r
     state: link

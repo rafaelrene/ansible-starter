@@ -1,23 +1,16 @@
 ---
-- name: Install Homebrew Formulae
-  when: ansible_os_family == 'Darwin'
-  community.general.homebrew:
-    update_homebrew: true
-    state: present
-    name: "{{ brew_formula_packages }}"
-
 - name: Tap Homebrew Casks
   when: ansible_os_family == 'Darwin'
   community.general.homebrew_tap:
     state: present
     name: "{{ brew_casks }}"
 
-- name: Install Homebrew Casks
+- name: Install Homebrew Formulae
   when: ansible_os_family == 'Darwin'
-  community.general.homebrew_cask:
+  community.general.homebrew:
     update_homebrew: true
     state: present
-    name: "{{ brew_cask_packages }}"
+    name: "{{ brew_formula_packages }}"
 
 - name: Install Paru packages
   when: ansible_os_family == 'Archlinux'
