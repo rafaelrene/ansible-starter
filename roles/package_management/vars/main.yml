@@ -14,9 +14,11 @@ brew_formula_packages:
   - ripgrep
   - tldr
   - tmux
+  - volta
   - zsh
 
 arch_packages:
+  - aur/volta-bin
   - core/openssh
   - extra/emacs
   - extra/fd
