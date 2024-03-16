@@ -1,5 +1,5 @@
 # PATHS
-export VOLTA_HOME="$HOME/.volta"
+export VOLTA_HOME="$XDG_CONFIG_HOME/volta"
 export DIVERSION_HOME="$HOME/.diversion"
 
 export PATH="$DIVERSION_HOME/bin:$VOLTA_HOME/bin:$HOME/.bin:$PATH"
