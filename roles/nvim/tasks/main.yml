@@ -5,3 +5,10 @@
     dest: ~/.config/nvim
     mode: u=rwx,go=r
     state: link
+
+- name: Setup custom config
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/custom-nvim-config"
+    dest: ~/.config/custom-nvim-config
+    mode: u=rwx,go=r
+    state: link
