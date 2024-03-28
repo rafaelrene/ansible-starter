@@ -9,7 +9,7 @@ fi
 
 branches=$(git branch -l | awk '!/\*/ {print}')
 
-if [ ${#selected} -eq 0 ]; then
+if [ ${#branches} -eq 0 ]; then
 	echo "No local branches to delete!"
 	exit 0
 fi
