@@ -8,6 +8,7 @@ brew_formula_packages:
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/emacs
+  - homebrew/cask/openvpn-connect
   - htop
   - kitty
   - lazygit
@@ -29,6 +30,7 @@ arch_packages:
   - extra/kitty
   - extra/lazygit
   - extra/neovim
+  - extra/networkmanager-openvpn
   - extra/ripgrep
   - extra/tldr
   - extra/tmux
