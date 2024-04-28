@@ -8,5 +8,6 @@
     - nvim
     - scripts
     - kitty
+    - graphite
     - package_management
     - volta
