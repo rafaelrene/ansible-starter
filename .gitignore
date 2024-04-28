@@ -16,3 +16,6 @@
 
 # TMUX
 **/plugins
+
+# GRAPHITE
+roles/graphite/files/user_config
