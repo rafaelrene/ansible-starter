@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 ansible-galaxy install -r requirements.yml
-ansible-playbook -vvv -K --ask-vault-pass -i inventory.yml main.yml
+ansible-playbook -K --ask-vault-pass -i inventory.yml main.yml
