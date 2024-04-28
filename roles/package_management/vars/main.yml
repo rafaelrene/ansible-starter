@@ -1,5 +1,7 @@
 ---
 # NOTE: Use `,` to separate different casks to tap into
+# TODO: Double check if we need to tap into cask first.
+# grapgite seems to suggest we don't need to do this at all.
 brew_casks: homebrew/cask-fonts
 
 brew_formula_packages:
@@ -18,6 +20,7 @@ brew_formula_packages:
   - tldr
   - tmux
   - volta
+  - withgraphite/tap/graphite
   - zsh
 
 arch_packages:
