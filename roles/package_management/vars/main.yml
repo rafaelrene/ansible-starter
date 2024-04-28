@@ -11,6 +11,7 @@ brew_formula_packages:
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/emacs
   - homebrew/cask/openvpn-connect
+  - homebrew/cask/volta
   - htop
   - kitty
   - lazygit
@@ -19,7 +20,6 @@ brew_formula_packages:
   - ripgrep
   - tldr
   - tmux
-  - volta
   - withgraphite/tap/graphite
   - zsh
 
