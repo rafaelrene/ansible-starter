@@ -17,3 +17,10 @@ export ANTIDOTE_HOME="$ZSH_HOME/.cache/antidote"
 export CXXFLAGS="-stdlib=libc++"
 
 export EDITOR="nvim"
+
+# ZSH History
+export HISTFILE="$ZSH_HOME/.zsh_history"
+export HISTSIZE=1000000
+export SAVEHIST=1000000
+
+setopt appendhistory
