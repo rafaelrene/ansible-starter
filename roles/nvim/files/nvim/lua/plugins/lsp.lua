@@ -37,6 +37,7 @@ return {
           },
           settings = {
             typescript = {
+              enablePromptUseWorkspaceTsdk = true,
               format = {
                 indentSize = vim.o.shiftwidth,
                 convertTabsToSpaces = vim.o.expandtab,
