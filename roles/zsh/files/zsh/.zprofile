@@ -18,6 +18,8 @@ export CXXFLAGS="-stdlib=libc++"
 
 export EDITOR="nvim"
 
+export GIT_CONFIG_SYSTEM="$XDG_CONFIG_HOME/git/.gitconfig"
+
 # ZSH History
 export HISTFILE="$ZSH_HOME/.zsh_history"
 export HISTSIZE=1000000

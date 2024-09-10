@@ -1,0 +1,42 @@
+[user]
+  name = René Rafael
+  email = rene.rafael@groupsolver.com
+
+[init]
+  defaultBranch = master
+
+[core]
+  editor = nvim
+  whitespace = -trailing-space
+  autocrlf = false
+  eol = lf
+
+[color]
+  ui = auto
+
+[fetch]
+  recurseSubmodules = on-demand
+  prune = true
+  all = true
+
+[pull]
+  ff = true
+
+[push]
+  default = simple
+  autosetupremote = true
+  followTags = true
+
+[rerere]
+  enabled = true
+  autoupdate = true
+
+[status]
+  submoduleSummary = true
+  showUntrackedFiles = all
+
+[rebase]
+  autostash = true
+
+[alias]
+  undo = reset --soft HEAD^

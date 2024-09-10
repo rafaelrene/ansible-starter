@@ -2,6 +2,7 @@
 - name: System Setup
   hosts: all
   roles:
+    - git
     - ssh
     - zsh
     - tmux

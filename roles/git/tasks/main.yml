@@ -1,0 +1,7 @@
+---
+- name: Setup symlinks for git
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/git
+    mode: u=rwx,go=r
+    state: link
