@@ -2,6 +2,7 @@
 brew_formula_packages:
   - arc
   - fd
+  - go-task/tap/go-task
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/emacs
@@ -25,6 +26,7 @@ brew_formula_packages:
 
 arch_packages:
   - aur/brave-bin
+  - aur/go-task
   - aur/graphite-cli-git
   - aur/onlyoffice-bin
   - aur/standardnotes-bin
