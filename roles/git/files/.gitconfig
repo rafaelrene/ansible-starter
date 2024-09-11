@@ -39,6 +39,12 @@
   autostash = true
 
 [alias]
+  # reset
   undo = reset --soft HEAD^
+
+  # pull
   p = pull
   rb = pull --rebase --autostash
+
+  # checkout
+  c = checkout -- .
