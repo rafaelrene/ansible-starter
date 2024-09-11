@@ -40,3 +40,5 @@
 
 [alias]
   undo = reset --soft HEAD^
+  p = pull
+  rb = pull --rebase --autostash
