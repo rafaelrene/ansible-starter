@@ -1,14 +1,5 @@
 local util = require("lspconfig/util")
 
-local function organize_imports()
-  local params = {
-    command = "_typescript.organizeImports",
-    arguments = { vim.api.nvim_buf_get_name(0) },
-  }
-
-  vim.lsp.buf.execute_command(params)
-end
-
 return {
   {
     "neovim/nvim-lspconfig",
@@ -28,32 +19,6 @@ return {
             "typescriptreact",
 
             "svelte",
-          },
-        },
-        ---@type lspconfig.options.tsserver
-        tsserver = {
-          keys = {
-            { "<leader>co", organize_imports, desc = "Organize Imports" },
-          },
-          settings = {
-            typescript = {
-              enablePromptUseWorkspaceTsdk = true,
-              format = {
-                indentSize = vim.o.shiftwidth,
-                convertTabsToSpaces = vim.o.expandtab,
-                tabSize = vim.o.tabstop,
-              },
-            },
-            javascript = {
-              format = {
-                indentSize = vim.o.shiftwidth,
-                convertTabsToSpaces = vim.o.expandtab,
-                tabSize = vim.o.tabstop,
-              },
-            },
-            completions = {
-              completeFunctionCalls = true,
-            },
           },
         },
         eslint = {
@@ -83,14 +48,17 @@ return {
             if client.name == "gopls" then
               if not client.server_capabilities.semanticTokensProvider then
                 local semantic = client.config.capabilities.textDocument.semanticTokens
-                client.server_capabilities.semanticTokensProvider = {
-                  full = true,
-                  legend = {
-                    tokenTypes = semantic.tokenTypes,
-                    tokenModifiers = semantic.tokenModifiers,
-                  },
-                  range = true,
-                }
+
+                if semantic ~= nil then
+                  client.server_capabilities.semanticTokensProvider = {
+                    full = true,
+                    legend = {
+                      tokenTypes = semantic.tokenTypes,
+                      tokenModifiers = semantic.tokenModifiers,
+                    },
+                    range = true,
+                  }
+                end
               end
             end
           end)
