@@ -44,7 +44,9 @@
 
   # pull
   p = pull
-  rb = pull --rebase --autostash
+  rb = pull --rebase --autostash origin
+  rbdev = rb develop
 
   # checkout
   c = checkout -- .
+  s = checkout -b
