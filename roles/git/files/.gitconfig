@@ -43,9 +43,8 @@
   undo = reset --soft HEAD^
 
   # pull
-  p = pull
   rb = pull --rebase --autostash origin
-  rbdev = rb develop
+  rbd = rb develop
 
   # checkout
   c = checkout -- .
