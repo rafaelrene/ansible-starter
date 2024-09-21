@@ -15,7 +15,7 @@
 **/data
 
 # TMUX
-**/plugins
+roles/tmux/files/plugins
 
 # GRAPHITE
 roles/graphite/files/user_config
