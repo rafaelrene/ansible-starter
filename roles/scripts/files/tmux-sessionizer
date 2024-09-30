@@ -23,4 +23,10 @@ elif ! tmux has-session -t="$selected_name" 2>/dev/null; then
 	tmux new-window -dn "Tests: $selected_name" -t "$selected_name:" -c "$selected"
 fi
 
-tmux switch-client -t "$selected_name"
+if [[ -z $TMUX ]]; then
+	# NOTE: When we're not running tmux, attach to the session
+	tmux attach-session -t "$selected_name"
+else
+	# NOTE: When we're running tmux, switch to the session
+	tmux switch-client -t "$selected_name"
+fi
