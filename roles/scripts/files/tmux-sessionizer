@@ -13,14 +13,9 @@ fi
 selected_name=$(basename "$selected" | tr . _)
 tmux_running=$(pgrep tmux)
 
-# TODO: Merge these conditions later
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
+# TODO: Add default split pane for `Main` window
+if [[ -z $TMUX ]] && [[ -z $tmux_running ]] || ! tmux has-session -t="$selected_name" 2>/dev/null; then
 	tmux new-session -ds "$selected_name" -n "Main" -c "$selected"
-	tmux split-window -vdl 50%
-	tmux new-window -dn "Tests" -t "$selected_name:" -c "$selected"
-elif ! tmux has-session -t="$selected_name" 2>/dev/null; then
-	tmux new-session -ds "$selected_name" -n "Main" -c "$selected"
-	tmux split-window -vdl 50%
 	tmux new-window -dn "Tests" -t "$selected_name:" -c "$selected"
 fi
 
