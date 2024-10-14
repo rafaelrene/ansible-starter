@@ -21,6 +21,7 @@ brew_formula_packages:
   - ripgrep
   - tldr
   - tmux
+  - tursodatabase/tap/turso
   - withgraphite/tap/graphite
   - zsh
 
@@ -30,6 +31,7 @@ arch_packages:
   - aur/graphite-cli-git
   - aur/onlyoffice-bin
   - aur/standardnotes-bin
+  - aur/turso-cli-bin
   - aur/volta-bin
   - core/openssh
   - extra/emacs
