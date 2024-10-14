@@ -5,3 +5,7 @@ Host bitbucket.org
 Host github.com
   AddKeysToAgent yes
   IdentityFile ~/.ssh/personal
+
+Host gitlab.com
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/personal
