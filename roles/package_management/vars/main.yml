@@ -6,6 +6,7 @@ brew_formula_packages:
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/emacs
+  - homebrew/cask/ente
   - homebrew/cask/maccy
   - homebrew/cask/onlyoffice
   - homebrew/cask/openvpn-connect
@@ -27,6 +28,7 @@ brew_formula_packages:
 
 arch_packages:
   - aur/brave-bin
+  - aur/ente-desktop-bin
   - aur/go-task
   - aur/graphite-cli-git
   - aur/onlyoffice-bin
