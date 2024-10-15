@@ -9,10 +9,10 @@ brew_formula_packages:
   - homebrew/cask/ente
   - homebrew/cask/maccy
   - homebrew/cask/onlyoffice
-  - homebrew/cask/openvpn-connect
   - homebrew/cask/proton-drive
   - homebrew/cask/readdle-spark
   - homebrew/cask/standard-notes
+  - homebrew/cask/tailscale
   - homebrew/cask/volta
   - htop
   - kitty
@@ -20,7 +20,6 @@ brew_formula_packages:
   - neovim
   - openssh
   - ripgrep
-  - tailscale
   - tldr
   - tmux
   - tursodatabase/tap/turso
@@ -43,7 +42,6 @@ arch_packages:
   - extra/kitty
   - extra/lazygit
   - extra/neovim
-  - extra/networkmanager-openvpn
   - extra/ripgrep
   - extra/tailscale
   - extra/tldr
