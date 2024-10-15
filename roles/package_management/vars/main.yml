@@ -20,6 +20,7 @@ brew_formula_packages:
   - neovim
   - openssh
   - ripgrep
+  - tailscale
   - tldr
   - tmux
   - tursodatabase/tap/turso
@@ -44,6 +45,7 @@ arch_packages:
   - extra/neovim
   - extra/networkmanager-openvpn
   - extra/ripgrep
+  - extra/tailscale
   - extra/tldr
   - extra/tmux
   - extra/ttf-jetbrains-mono
