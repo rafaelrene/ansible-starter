@@ -10,7 +10,7 @@ if [[ -z $selected ]]; then
 	exit 0
 fi
 
-selected_name=$(basename "$selected" | tr . _)
+selected_name=$(echo "$selected" | awk -F / -v OFS=/ '{ print $(NF-1), $NF }' | tr . _)
 tmux_running=$(pgrep tmux)
 
 # TODO: Add default split pane for `Main` window
