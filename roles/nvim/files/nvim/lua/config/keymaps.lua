@@ -45,8 +45,6 @@ nmap("<leader>fs", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], "Find
 nmap("<leader>fC", [[:let @+ = expand("%:p")<CR>]], "Copy file path (Absolute)")
 nmap("<leader>fc", [[:let @+ = expand("%:.")<CR>]], "Copy file path (Relative)")
 
-nmap("<leader>bo", [[:%bd|e#|bd#<CR>]], "Buffer Only")
-
 -- Basic visual mappings
 vmap("K", ":m '< -2<CR>gv=gv", "Move selection line up")
 vmap("J", ":m '> +1<CR>gv=gv", "Move selection line down")
@@ -58,5 +56,4 @@ imap("jk", "<ESC>", "Return to normal mode")
 -- Most of the time keymaps for plugins are lazy-loaded from the plugin file itself.
 
 -- Git
-nmap("<leader>gv", [[:Gvdiffsplit!<CR>]], "Resolve git conflicts")
 nmap("<leader>gg", [[:Neogit<CR>]], "Neogit")
