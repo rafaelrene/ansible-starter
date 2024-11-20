@@ -1,11 +1,19 @@
 ---
-- name: Check if SSH Keys are setup
-  register: ssh_folder_check
+- name: Find SSH files
+  register: ssh_files
+  ansible.builtin.find:
+    paths: "{{ role_path }}/files"
+    file_type: file
+    recurse: false
+
+- name: Check if SSH keys are setup
+  register: ssh_keys_check
   ansible.builtin.stat:
-    path: ~/.ssh
+    path: "~/.ssh/{{ item }}"
+  loop: "{{ ssh_files.files | map(attribute='path') | map('regex_replace', '^.*/(.*)$', '\\1') | list }}"
 
 - name: Copy SSH keys
-  when: not ssh_folder_check.stat.exists
+  when: ssh_keys_check.results | selectattr('stat.exists', 'equalto', false) | list | length > 0
   become: true
   become_user: "{{ ansible_user_id }}"
   ansible.builtin.copy:
@@ -14,13 +22,3 @@
     mode: u+rw
     directory_mode: u+rwx
     owner: "{{ ansible_user_id }}"
-
-- name: Set Permissions
-  become: true
-  become_user: "{{ ansible_user_id }}"
-  when: not ssh_folder_check.stat.exists
-  ansible.builtin.shell: |
-    chmod -R a-rwx,u=rwx ~/.ssh
-    chmod a-rwx,u=rwx ~/.ssh
-
-    exit 0
