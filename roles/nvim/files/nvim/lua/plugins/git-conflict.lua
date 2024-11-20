@@ -1,6 +1,8 @@
 return {
   "akinsho/git-conflict.nvim",
-  config = true,
   event = "User",
   version = "*",
+  opts = {
+    disable_diagnostics = true, -- This will disable the diagnostics in a buffer whilst it is conflicted
+  },
 }
