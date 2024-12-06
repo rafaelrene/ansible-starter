@@ -1,0 +1,8 @@
+---
+- name: Setup sketchybar config
+  when: ansible_os_family == 'Darwin' # Only for Mac
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/sketchybar"
+    dest: ~/.config/sketchybar
+    mode: u=rwx,go=r
+    state: link

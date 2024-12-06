@@ -2,6 +2,7 @@
 brew_formula_packages:
   - arc
   - fd
+  - felixkratz/formulae/sketchybar
   - go-task/tap/go-task
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
