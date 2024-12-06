@@ -3,8 +3,9 @@ export VOLTA_HOME="$XDG_CONFIG_HOME/volta"
 export DIVERSION_HOME="$XDG_CONFIG_HOME/diversion"
 export PNPM_HOME="$XDG_CONFIG_HOME/pnpm"
 export GOPATH="$XDG_CONFIG_HOME/go"
+export SPIN_HOME="$HOME/.spin"
 
-export PATH="$GOPATH/bin:$DIVERSION_HOME/bin:$PNPM_HOME/bin:$VOLTA_HOME/bin:$HOME/.bin:$PATH"
+export PATH="$SPIN_HOME/bin:$GOPATH/bin:$DIVERSION_HOME/bin:$PNPM_HOME/bin:$VOLTA_HOME/bin:$HOME/.bin:$PATH"
 
 # FZF - Theme (Catpuccin Macchiato wo/ bg)
 export FZF_DEFAULT_OPTS=" \
@@ -27,3 +28,7 @@ export HISTSIZE=1000000
 export SAVEHIST=1000000
 
 setopt appendhistory
+
+# Added by OrbStack: command-line tools and integration
+# This won't be added again if you remove it.
+source ~/.orbstack/shell/init.zsh 2>/dev/null || :
