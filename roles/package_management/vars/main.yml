@@ -8,10 +8,12 @@ brew_formula_packages:
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/emacs
   - homebrew/cask/ente
+  - homebrew/cask/font-hack-nerd-font
   - homebrew/cask/maccy
   - homebrew/cask/onlyoffice
   - homebrew/cask/proton-drive
   - homebrew/cask/readdle-spark
+  - homebrew/cask/sf-symbols
   - homebrew/cask/standard-notes
   - homebrew/cask/tailscale
   - homebrew/cask/volta
