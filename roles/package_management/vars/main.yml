@@ -9,7 +9,7 @@ brew_formula_packages:
   - homebrew/cask/emacs
   - homebrew/cask/ente
   - homebrew/cask/font-hack-nerd-font
-  - homebrew/cask/maccy
+  - homebrew/cask/raycast
   - homebrew/cask/onlyoffice
   - homebrew/cask/proton-drive
   - homebrew/cask/readdle-spark
