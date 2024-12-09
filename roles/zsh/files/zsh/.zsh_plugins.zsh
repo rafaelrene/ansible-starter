@@ -38,8 +38,5 @@ fpath+=( /Users/rafael/.config/zsh/.cache/antidote/https-COLON--SLASH--SLASH-git
 zsh-defer source /Users/rafael/code/.personal/ansible/roles/zsh/files/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-zdharma-continuum-SLASH-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 fpath+=( /Users/rafael/.config/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-zsh-users-SLASH-zsh-history-substring-search )
 source /Users/rafael/code/.personal/ansible/roles/zsh/files/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-zsh-users-SLASH-zsh-history-substring-search/zsh-history-substring-search.plugin.zsh
-fpath+=( /Users/rafael/.config/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-romkatv-SLASH-powerlevel10k )
-source /Users/rafael/code/.personal/ansible/roles/zsh/files/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-romkatv-SLASH-powerlevel10k/powerlevel10k.zsh-theme
-source /Users/rafael/code/.personal/ansible/roles/zsh/files/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-romkatv-SLASH-powerlevel10k/powerlevel9k.zsh-theme
 fpath+=( /Users/rafael/.config/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-davidde-SLASH-git )
 source /Users/rafael/code/.personal/ansible/roles/zsh/files/zsh/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-davidde-SLASH-git/git.plugin.zsh
