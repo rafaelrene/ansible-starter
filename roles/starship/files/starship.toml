@@ -1,13 +1,90 @@
 # Get editor completions based on the config schema
 "$schema" = 'https://starship.rs/config-schema.json'
 
-# Inserts a blank line between shell prompts
+format = '''
+(\[$git_branch(\($git_commit\)):$git_status( | $git_state)\]): $directory
+$hostname[$character](bold green)
+'''
+
+right_format = '(\($cmd_duration\))$all'
+
+# Inserts a blank line between shell prompts# Use custom format
 add_newline = true
 
 # Sets user-defined palette
 # Palettes must be defined _after_ this line
 palette = "catppuccin_macchiato"
 
+[bun]
+format = '[$symbol($version)]($style)'
+
+# Replace the '❯' symbol in the prompt with '➜'
+[character]
+success_symbol = '[➜](bold green)'
+error_symbol = '[➜](bold red)'
+
+[cmd_duration]
+format = '[$duration]($style)'
+show_notifications = true
+min_time_to_notify = 10_000
+notification_timeout = 3_000
+
+[conda]
+format = '[$symbol$environment]($style)'
+ignore_base = true
+
+[deno]
+format = '[🦕 $version](green bold)'
+
+[directory]
+fish_style_pwd_dir_length = 1
+
+[git_branch]
+format = '[$symbol$branch(:$remote_branch)]($style)'
+truncation_length = 50
+truncation_symbol = '../'
+
+[git_commit]
+format = '[\($hash$tag\)]($style)'
+
+[git_state]
+format = '\([$state( $progress_current / $progress_total)]($style)\)'
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style))'
+
+[golang]
+format = '[$symbol($version)]($style)'
+
+[hostname]
+format = '[$hostname@]($style)'
+style = "bg:green fg:base"
+ssh_only = true
+
+[lua]
+format = '[$symbol($version)]($style)'
+
+[nodejs]
+format = '[$symbol($version)]($style)'
+
+[package]
+disabled = true
+
+[python]
+format = '[${symbol}(${version})]($style)'
+
+[status]
+format = '[$symbol$status]($style)'
+
+[sudo]
+format = '[as $symbol]($style)'
+
+[time]
+disabled = false
+time_format = '%T'
+format = '[ at $time]($style)'
+
+# Pallets must be defined *AFTER* `pallete`
 [palettes.catppuccin_macchiato]
 rosewater = "#f4dbd6"
 flamingo = "#f0c6c6"
