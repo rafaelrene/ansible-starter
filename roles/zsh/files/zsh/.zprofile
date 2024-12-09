@@ -21,7 +21,6 @@ export CXXFLAGS="-stdlib=libc++"
 export EDITOR="nvim"
 
 export GIT_CONFIG_SYSTEM="$XDG_CONFIG_HOME/git/.gitconfig"
-
 export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
 
 # ZSH History
