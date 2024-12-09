@@ -1,0 +1,7 @@
+---
+- name: Setup starship config
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/starship
+    mode: u=rwx,go=r
+    state: link
