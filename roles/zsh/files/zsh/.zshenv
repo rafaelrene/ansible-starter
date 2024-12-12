@@ -1,4 +1,6 @@
 [ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f '/Users/rafael/code/.sources/google-cloud-sdk/path.zsh.inc' ] && source '/Users/rafael/code/.sources/google-cloud-sdk/path.zsh.inc'
+[ -f '/Users/rafael/code/.sources/google-cloud-sdk/completion.zsh.inc' ] && source '/Users/rafael/code/.sources/google-cloud-sdk/completion.zsh.inc'
 
 [ -x "$(command -v conda)" ] && eval "$(conda "shell.$(basename "${SHELL}")" hook)"
 
