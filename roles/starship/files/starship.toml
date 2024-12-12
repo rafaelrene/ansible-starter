@@ -6,7 +6,7 @@ format = '''
 $hostname[$character](bold green)
 '''
 
-right_format = '(\($cmd_duration\))$all'
+right_format = '(\($cmd_duration\))($jobs)$all'
 
 # Inserts a blank line between shell prompts# Use custom format
 add_newline = true
@@ -39,6 +39,9 @@ format = '[🦕 $version](green bold)'
 [directory]
 fish_style_pwd_dir_length = 1
 
+[docker_context]
+format = '[$symbol$context](blue bold) '
+
 [git_branch]
 format = '[$symbol$branch(:$remote_branch)]($style)'
 truncation_length = 50
@@ -61,6 +64,9 @@ format = '[$hostname@]($style)'
 style = "bg:green fg:base"
 ssh_only = true
 
+[jobs]
+format = "[$symbol$number](style)"
+
 [lua]
 format = '[$symbol($version)]($style)'
 
@@ -71,7 +77,7 @@ format = '[$symbol($version)]($style)'
 disabled = true
 
 [python]
-format = '[${symbol}(${version})]($style)'
+disabled = true
 
 [status]
 format = '[$symbol$status]($style)'
@@ -83,6 +89,9 @@ format = '[as $symbol]($style)'
 disabled = false
 time_format = '%T'
 format = '[ at $time]($style)'
+
+[gcloud]
+disabled = true
 
 # Pallets must be defined *AFTER* `pallete`
 [palettes.catppuccin_macchiato]
