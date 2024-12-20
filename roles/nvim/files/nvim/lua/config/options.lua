@@ -17,3 +17,5 @@ vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
 vim.opt.fileformat = "unix"
 vim.opt.fileformats = "unix"
+
+vim.g.snacks_scroll = false
