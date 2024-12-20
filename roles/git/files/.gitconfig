@@ -1,3 +1,6 @@
+[include]
+  path = ~/.config/git/themes.gitconfig
+
 [user]
   name = René Rafael
   email = rene.rafael@groupsolver.com
@@ -6,13 +9,21 @@
   defaultBranch = master
 
 [core]
+  pager = delta
   editor = nvim
   whitespace = -trailing-space
   autocrlf = false
   eol = lf
 
+[interactive]
+  diffFilter = delta --color-only
+
 [color]
   ui = auto
+
+[delta]
+  features = catppuccin-macchiato
+  dark = true
 
 [fetch]
   recurseSubmodules = on-demand
@@ -21,6 +32,9 @@
 
 [pull]
   ff = true
+
+[merge]
+  conflictstyle = zdiff3
 
 [push]
   default = simple
