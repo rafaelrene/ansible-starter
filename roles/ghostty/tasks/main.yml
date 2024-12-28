@@ -1,7 +1,7 @@
 ---
-- name: Setup kitty config
+- name: Setup ghostty config
   ansible.builtin.file:
     src: "{{ role_path }}/files"
-    dest: ~/.config/kitty
+    dest: ~/.config/ghostty
     mode: u=rwx,go=r
     state: link
