@@ -1,0 +1,7 @@
+---
+- name: Setup nushell config
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/nushell
+    mode: u=rwx,go=r
+    state: link

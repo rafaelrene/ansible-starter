@@ -1,0 +1,101 @@
+exit
+config nu
+ls
+ls -la
+$nu.env-path
+v
+nvim
+exit
+clear
+ls
+exit
+fg
+nvim
+exit
+clear
+ls
+v
+nvim
+$env.config
+exit
+ls
+exit
+ls
+fg
+v
+nvim
+$nu.vendor-autoload-dirs
+fg
+v
+nvim
+exit
+fg
+v
+nvim
+$env
+$env.XDG_CONFIG_HOME
+fg
+nvim
+help path
+help path join
+fg
+nvim
+fg
+$env
+nvim
+fzf
+fg
+v
+nvim
+exit
+fg
+nvim
+exit
+fzf
+exit
+fzf
+clear
+fg
+v
+exit
+fg
+exit
+$env
+exit
+orb
+ls
+clear
+fg
+v
+exit
+open
+$SHELL
+clear
+exit
+brew shellenv
+brew shellenv | lines
+brew shellenv | lines | get 0
+brew shellenv | lines | get 1
+brew shellenv | lines | get 2
+brew shellenv | lines | get 3
+brew shellenv | lines | get 4
+brew shellenv | lines | get 5
+exit
+help path
+help path type
+ls | path type
+ls | get name |  path type
+exit
+bash-env
+exit
+nu
+exit
+tldr nu
+help plugin
+plugin list
+exit
+brew shellenv | str trim | lines | parse export '{name}={value}' | transpose --header-row --as-record
+brew shellenv | str trim | lines | parse 'export {name}={value}' | transpose --header-row --as-record
+brew shellenv
+$env.PATH
+exit

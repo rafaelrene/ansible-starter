@@ -5,6 +5,7 @@
     - git
     - ssh
     - zsh
+    - nushell
     - tmux
     - nvim
     - scripts
