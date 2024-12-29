@@ -14,6 +14,9 @@
 **/*.log
 **/data
 
+# MACOS
+**/.DS_Store
+
 # TMUX
 roles/tmux/files/plugins
 
