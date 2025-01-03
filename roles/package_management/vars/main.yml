@@ -9,16 +9,16 @@ brew_formula_packages:
   - homebrew/cask/emacs
   - homebrew/cask/ente
   - homebrew/cask/font-hack-nerd-font
-  - homebrew/cask/raycast
+  - homebrew/cask/ghostty
   - homebrew/cask/onlyoffice
   - homebrew/cask/proton-drive
+  - homebrew/cask/raycast
   - homebrew/cask/readdle-spark
   - homebrew/cask/sf-symbols
   - homebrew/cask/standard-notes
   - homebrew/cask/tailscale
   - homebrew/cask/volta
   - htop
-  - kitty
   - lazygit
   - neovim
   - openssh
@@ -41,8 +41,8 @@ arch_packages:
   - core/openssh
   - extra/emacs
   - extra/fd
+  - extra/ghostty
   - extra/htop
-  - extra/kitty
   - extra/lazygit
   - extra/neovim
   - extra/ripgrep
