@@ -50,7 +50,7 @@ vmap("K", ":m '< -2<CR>gv=gv", "Move selection line up")
 vmap("J", ":m '> +1<CR>gv=gv", "Move selection line down")
 
 -- Basic insert mappings
-imap("jk", "<ESC>", "Return to normal mode")
+imap("jj", "<ESC>", "Return to normal mode")
 
 -- Plugins
 -- Most of the time keymaps for plugins are lazy-loaded from the plugin file itself.
