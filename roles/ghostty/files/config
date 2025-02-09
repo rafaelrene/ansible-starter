@@ -16,3 +16,5 @@ clipboard-write = allow
 clipboard-trim-trailing-spaces = true
 
 macos-option-as-alt = true 
+
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
