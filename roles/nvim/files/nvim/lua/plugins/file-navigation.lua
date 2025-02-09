@@ -12,6 +12,22 @@ return {
         width_preview = 100,
       },
     },
+    keys = {
+      {
+        "-",
+        function()
+          require("mini.files").open(vim.api.nvim_buf_get_name(0), true)
+        end,
+        desc = "Open mini.files (Directory of Current File)",
+      },
+      {
+        "_",
+        function()
+          require("mini.files").open(vim.uv.cwd(), true)
+        end,
+        desc = "Open mini.files (cwd)",
+      },
+    },
   },
   {
     "ibhagwan/fzf-lua",
