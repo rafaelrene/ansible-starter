@@ -1,8 +1,5 @@
 # MACOS
 **/.DS_Store
 
-# TMUX
-roles/tmux/files/plugins
-
 # GRAPHITE
 roles/graphite/files/user_config
