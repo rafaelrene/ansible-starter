@@ -22,3 +22,6 @@ roles/tmux/files/plugins
 
 # GRAPHITE
 roles/graphite/files/user_config
+
+# NUSHELL
+roles/nushell/files/history.txt

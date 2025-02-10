@@ -44,11 +44,12 @@ $env.EDITOR = "nvim"
 $env.GIT_CONFIG_SYSTEM = $env.XDG_CONFIG_HOME | path join "git" ".gitconfig"
 $env.STARSHIP_CONFIG = $env.XDG_CONFIG_HOME | path join "starship" "starship.toml"
 
+if ("/opt/homebrew/bin/brew" | path exists) {
+  $env.HOMEBREW_PREFIX = "/opt/homebrew"
+  $env.HOMEBREW_CELLAR = "/opt/homebrew/Cellar"
+  $env.HOMEBREW_REPOSITORY = "/opt/homebrew"
 
-# [ -f "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-
-if path exists "/opt/homebrew/bin/brew" {
-  
+  path add ($env.HOMEBREW_PREFIX | path join "sbin") ($env.HOMEBREW_PREFIX | path join "bin")
 }
 
 use ~/.cache/starship/init.nu
