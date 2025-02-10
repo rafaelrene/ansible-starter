@@ -1,9 +1,3 @@
-# ZSH
-**/.zcompdump*
-**/.zsh_history
-**/.histfile
-**/zsh/.cache
-
 # NVIM
 **/tt.*
 **/.tests
