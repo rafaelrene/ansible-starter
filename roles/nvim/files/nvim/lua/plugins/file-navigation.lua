@@ -21,7 +21,7 @@ return {
         desc = "Open mini.files (Directory of Current File)",
       },
       {
-        "_",
+        "--",
         function()
           require("mini.files").open(vim.uv.cwd(), true)
         end,
