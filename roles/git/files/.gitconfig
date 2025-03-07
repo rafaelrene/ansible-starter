@@ -63,3 +63,7 @@
   # checkout
   c = checkout -- .
   s = checkout -b
+
+  # submodules
+  si = submodule update --init --recursive
+  sup = submodule update --recursive
