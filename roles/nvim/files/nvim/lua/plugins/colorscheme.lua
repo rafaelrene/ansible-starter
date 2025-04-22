@@ -4,7 +4,7 @@ return {
     lazy = true,
     name = "catppuccin",
     opts = {
-      flavor = "macchiato",
+      flavor = "mocha",
       transparent_background = true, -- disables setting the background color.
       show_end_of_buffer = true, -- shows the '~' characters after the end of buffers
     },

@@ -54,6 +54,3 @@ imap("jj", "<ESC>", "Return to normal mode")
 
 -- Plugins
 -- Most of the time keymaps for plugins are lazy-loaded from the plugin file itself.
-
--- Git
-nmap("<leader>gg", [[:Neogit<CR>]], "Neogit")
