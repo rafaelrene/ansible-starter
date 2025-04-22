@@ -66,4 +66,4 @@
 
   # submodules
   si = submodule update --init --recursive
-  sup = submodule update --recursive
+  sup = submodule update --remote --recursive
