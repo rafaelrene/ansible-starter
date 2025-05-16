@@ -28,6 +28,9 @@ path add ($env.XDG_CONFIG_HOME | path join "pnpm" "bin")
 path add ($env.XDG_CONFIG_HOME | path join "go" "bin")
 path add ($env.HOME | path join ".spin" "bin")
 
+$env.LANG = "en_US.UTF-8"
+$env.LC_ALL = "en_US.UTF-8"
+
 $env.config.buffer_editor = "nvim"
 
 $env.FZF_DEFAULT_OPTS = '
