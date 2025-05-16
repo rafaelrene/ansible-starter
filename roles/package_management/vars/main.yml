@@ -1,26 +1,28 @@
 ---
 brew_formula_packages:
-  - arc
   - fd
   - felixkratz/formulae/sketchybar
   - go-task/tap/go-task
   - homebrew/cask-fonts/font-jetbrains-mono
   - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
+  - homebrew/cask/anytype
+  - homebrew/cask/brave-browser
   - homebrew/cask/emacs
   - homebrew/cask/ente
+  - homebrew/cask/ente-auth
   - homebrew/cask/font-hack-nerd-font
   - homebrew/cask/ghostty
+  - homebrew/cask/mailspring
   - homebrew/cask/onlyoffice
   - homebrew/cask/proton-drive
   - homebrew/cask/raycast
-  - homebrew/cask/readdle-spark
-  - homebrew/cask/sf-symbols
   - homebrew/cask/standard-notes
   - homebrew/cask/tailscale
   - homebrew/cask/volta
   - htop
   - lazygit
   - neovim
+  - nushell
   - openssh
   - ripgrep
   - tldr
@@ -30,10 +32,13 @@ brew_formula_packages:
   - zsh
 
 arch_packages:
+  - aur/anytype-bin
   - aur/brave-bin
+  - aur/ente-auth-bin
   - aur/ente-desktop-bin
   - aur/go-task
   - aur/graphite-cli-git
+  - aur/mailspring-bin
   - aur/onlyoffice-bin
   - aur/standardnotes-bin
   - aur/turso-cli-bin
@@ -45,10 +50,12 @@ arch_packages:
   - extra/htop
   - extra/lazygit
   - extra/neovim
+  - extra/nushell
   - extra/ripgrep
   - extra/tailscale
   - extra/tldr
   - extra/tmux
+  - extra/ttf-hack-nerd
   - extra/ttf-jetbrains-mono
   - extra/ttf-jetbrains-mono-nerd
   - extra/zsh
