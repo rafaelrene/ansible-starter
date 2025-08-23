@@ -26,6 +26,7 @@ brew_formula_packages:
   - nushell
   - openssh
   - ripgrep
+  - sst/tap/opencode
   - tldr
   - tmux
   - tursodatabase/tap/turso
@@ -41,6 +42,7 @@ arch_packages:
   - aur/graphite-cli-git
   - aur/mailspring-bin
   - aur/onlyoffice-bin
+  - aur/opencode-bin
   - aur/standardnotes-bin
   - aur/turso-cli-bin
   - aur/volta-bin
