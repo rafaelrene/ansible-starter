@@ -3,23 +3,21 @@ brew_formula_packages:
   - fd
   - felixkratz/formulae/sketchybar
   - go-task/tap/go-task
-  - homebrew/cask-fonts/font-jetbrains-mono
-  - homebrew/cask-fonts/font-jetbrains-mono-nerd-font
   - homebrew/cask/anytype
   - homebrew/cask/brave-browser
   - homebrew/cask/discord
-  - homebrew/cask/emacs
   - homebrew/cask/ente
   - homebrew/cask/ente-auth
   - homebrew/cask/font-hack-nerd-font
+  - homebrew/cask/font-jetbrains-mono
+  - homebrew/cask/font-jetbrains-mono-nerd-font
   - homebrew/cask/ghostty
   - homebrew/cask/mailspring
   - homebrew/cask/onlyoffice
   - homebrew/cask/proton-drive
   - homebrew/cask/raycast
   - homebrew/cask/standard-notes
-  - homebrew/cask/tailscale
-  - homebrew/cask/volta
+  - homebrew/cask/tailscale-app
   - htop
   - lazygit
   - neovim
@@ -30,6 +28,7 @@ brew_formula_packages:
   - tldr
   - tmux
   - tursodatabase/tap/turso
+  - volta
   - withgraphite/tap/graphite
   - zsh
 
