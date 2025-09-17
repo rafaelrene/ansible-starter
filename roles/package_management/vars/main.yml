@@ -18,6 +18,7 @@ brew_formula_packages:
   - homebrew/cask/raycast
   - homebrew/cask/standard-notes
   - homebrew/cask/tailscale-app
+  - homebrew/cask/zen
   - htop
   - lazygit
   - neovim
@@ -27,6 +28,7 @@ brew_formula_packages:
   - sst/tap/opencode
   - tldr
   - tmux
+  - tree-sitter-cli
   - tursodatabase/tap/turso
   - volta
   - withgraphite/tap/graphite
@@ -45,6 +47,7 @@ arch_packages:
   - aur/standardnotes-bin
   - aur/turso-cli-bin
   - aur/volta-bin
+  - aur/zen-browser-bin
   - core/openssh
   - extra/discord
   - extra/emacs
@@ -58,6 +61,7 @@ arch_packages:
   - extra/tailscale
   - extra/tldr
   - extra/tmux
+  - extra/tree-sitter-cli
   - extra/ttf-hack-nerd
   - extra/ttf-jetbrains-mono
   - extra/ttf-jetbrains-mono-nerd
