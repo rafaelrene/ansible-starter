@@ -65,5 +65,6 @@
   s = checkout -b
 
   # submodules
-  si = submodule update --init --recursive
-  sup = submodule update --remote --recursive
+  su = submodule update
+  sui = su --init --recursive
+  sup = su --remote --recursive
