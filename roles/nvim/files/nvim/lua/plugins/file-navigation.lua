@@ -2,7 +2,7 @@ return {
   { "nvim-neo-tree/neo-tree.nvim", enabled = false },
   { "akinsho/bufferline.nvim", enabled = false },
   {
-    "echasnovski/mini.files",
+    "nvim-mini/mini.files",
     opts = {
       mappings = {
         go_in = "",
@@ -31,19 +31,14 @@ return {
   },
   {
     "ibhagwan/fzf-lua",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
     opts = function()
       local winopts_preview = {
         layout = "vertical",
         vertical = "down:80%,border-top",
       }
-
-      if not vim.tbl_isempty(LazyVim.lsp.get_clients({ bufnr = 0, name = "vtsls" })) then
-        winopts_preview = {
-          layout = "vertical",
-          vertical = "down:80%,border-top",
-          hidden = "hidden",
-        }
-      end
 
       return {
         winopts = {
