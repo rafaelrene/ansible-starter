@@ -3,6 +3,7 @@
 ## General Rules
 
 - In all interactions and messages, be extremely concise even if it means sacrificing grammar
+- Don't add comments unless they are necessary. If code is self-documenting, you're forbidden to add comments.
 
 ## Git
 
