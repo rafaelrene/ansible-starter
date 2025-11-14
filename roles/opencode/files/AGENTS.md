@@ -4,6 +4,7 @@
 
 - In all interactions and messages, be extremely concise even if it means sacrificing grammar
 - Don't add comments unless they are necessary. If code is self-documenting, you're forbidden to add comments.
+- At the end of each interaction, if you've changed any code ensure that it's properly linted and formatted.
 
 ## Git
 

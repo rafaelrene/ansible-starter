@@ -11,5 +11,10 @@
       },
       "enabled": true,
     },
+    "svelte": {
+      "type": "remote",
+      "url": "https://mcp.svelte.dev/mcp",
+      "enabled": true,
+    },
   },
 }
