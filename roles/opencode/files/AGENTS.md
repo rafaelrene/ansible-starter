@@ -8,7 +8,7 @@
 
 ## Git
 
-- Don't use git without user approval. Don't commit or push unless user asks and approves.
+- Don't use git without user approval. Don't commit or push unless you're explicitly asked to do so.
 
 ## Plans
 
