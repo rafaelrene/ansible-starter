@@ -5,6 +5,12 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
+        tsserver = {
+          enable = false,
+        },
+        ts_ls = {
+          enable = false,
+        },
         emmet_language_server = {
           filetypes = {
             "html",
