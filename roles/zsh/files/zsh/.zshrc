@@ -8,6 +8,7 @@ antidote load
 [ -x "$(command -v starship)" ] && eval "$(starship init zsh)"
 
 source $ZSH_HOME/aliases.sh
+source $ZSH_HOME/functions.sh
 source $ZSH_HOME/bindings.sh
 
 eval $(ssh-agent) > /dev/null 2> /dev/null
