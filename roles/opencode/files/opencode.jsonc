@@ -11,5 +11,20 @@
       },
       "enabled": true,
     },
+    "gsmcp": {
+      "type": "local",
+      "command": [
+        "/Users/rafael/.config/volta/bin/npx",
+        "-y",
+        "mcp-remote",
+        "https://gs-mcp.dev.lab.groupsolver.com/mcp",
+        "--allow-http",
+        "--header",
+        "x-gs-mcp:true",
+        "--header",
+        "gsauth:Dc36d3d28-f48b-43a2-a335-ccec9900d3a0",
+      ],
+      "enabled": false,
+    },
   },
 }
