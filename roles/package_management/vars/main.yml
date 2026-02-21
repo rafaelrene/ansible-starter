@@ -4,7 +4,7 @@ brew_formula_packages:
   - felixkratz/formulae/sketchybar
   - go-task/tap/go-task
   - homebrew/cask/anytype
-  - homebrew/cask/brave-browser
+  - homebrew/cask/helium-browser
   - homebrew/cask/discord
   - homebrew/cask/ente
   - homebrew/cask/ente-auth
@@ -30,13 +30,14 @@ brew_formula_packages:
   - tmux
   - tree-sitter-cli
   - tursodatabase/tap/turso
+  - jj
   - volta
   - withgraphite/tap/graphite
   - zsh
 
 arch_packages:
   - aur/anytype-bin
-  - aur/brave-bin
+  - aur/helium-browser-bin
   - aur/ente-auth-bin
   - aur/ente-desktop-bin
   - aur/go-task
@@ -65,4 +66,5 @@ arch_packages:
   - extra/ttf-hack-nerd
   - extra/ttf-jetbrains-mono
   - extra/ttf-jetbrains-mono-nerd
+  - extra/jujutsu
   - extra/zsh
