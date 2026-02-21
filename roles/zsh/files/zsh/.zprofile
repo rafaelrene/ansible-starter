@@ -4,8 +4,9 @@ export DIVERSION_HOME="$XDG_CONFIG_HOME/diversion"
 export PNPM_HOME="$XDG_CONFIG_HOME/pnpm"
 export GOPATH="$XDG_CONFIG_HOME/go"
 export SPIN_HOME="$HOME/.spin"
+export HOMEBREW_HOME="/opt/homebrew"
 
-export PATH="$SPIN_HOME/bin:$GOPATH/bin:$DIVERSION_HOME/bin:$PNPM_HOME/bin:$VOLTA_HOME/bin:$HOME/.bin:$PATH"
+export PATH="$HOMEBREW_HOME/bin:$SPIN_HOME/bin:$GOPATH/bin:$DIVERSION_HOME/bin:$PNPM_HOME/bin:$VOLTA_HOME/bin:$HOME/.bin:$PATH"
 
 # FZF - Theme (Catpuccin Macchiato wo/ bg)
 export FZF_DEFAULT_OPTS=" \
