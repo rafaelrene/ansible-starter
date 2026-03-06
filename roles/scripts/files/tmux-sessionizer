@@ -1,13 +1,58 @@
 #!/usr/bin/env bash
 
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+script_path="$script_dir/$(basename -- "${BASH_SOURCE[0]}")"
+reload_cmd=$(printf '%q --candidates {q} || true' "$script_path")
+
+roots=(
+	"$HOME"
+	"$HOME/code"
+	"$HOME/code/.personal"
+	"$HOME/code/.sources"
+	"$HOME/.config"
+)
+
+list_candidates() {
+	local query=$1
+	local root
+
+	if [[ $query == :* ]]; then
+		query=${query#:}
+		[[ -z $query ]] && return 0
+		for root in "${roots[@]}"; do
+			printf '[NEW] : %s/%s\n' "$root" "$query"
+		done
+		return 0
+	fi
+
+	for root in "${roots[@]}"; do
+		find -L "$root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null
+	done
+
+	return 0
+}
+
+if [[ ${1:-} == "--candidates" ]]; then
+	list_candidates "${2:-}"
+	exit 0
+fi
+
 if [[ $# -eq 1 ]]; then
 	selected=$1
 else
-	selected=$(find -L ~ ~/code ~/code/.personal ~/code/.sources ~/.config -mindepth 1 -maxdepth 1 -type d | fzf)
+	selected=$(list_candidates "" | fzf --bind "change:reload:$reload_cmd")
 fi
 
 if [[ -z $selected ]]; then
 	exit 0
+fi
+
+if [[ $selected == '[NEW] : '* ]]; then
+	selected=${selected#'[NEW] : '}
+	mkdir -p "$selected"
+elif [[ $selected == '[NEW] '* ]]; then
+	selected=${selected#'[NEW] '}
+	mkdir -p "$selected"
 fi
 
 selected_name=$(echo "$selected" | awk -F / -v OFS=/ '{ print $(NF-1), $NF }' | tr . _)
