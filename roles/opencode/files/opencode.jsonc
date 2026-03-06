@@ -1,16 +1,16 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "catppuccin",
   "autoupdate": false,
-  "mcp": {
-    "context7": {
-      "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
-        "CONTEXT7_API_KEY": "ctx7sk-5cb66bd3-9693-4b8a-9039-0f67fe13d359",
-      },
-      "enabled": true,
+  "plugin": ["./.opencode/plugins/library-context.ts"],
+  "command": {
+    "libctx": {
+      "description": "Lookup package/repository usage from source code",
+      "agent": "library-context",
+      "subtask": true,
+      "template": "Use `library_code_lookup` with the first token in `$ARGUMENTS` as explicit `package_name` spec (`npm:<package>@<version>` or `git:<owner>/<repo>@<ref>`), and the remaining text as `query`. Return structured JSON only.",
     },
+  },
+  "mcp": {
     "gsmcp": {
       "type": "local",
       "command": [

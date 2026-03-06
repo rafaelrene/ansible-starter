@@ -6,12 +6,16 @@
 - Don't add comments unless they are necessary. If code is self-documenting, you're forbidden to add comments.
 - At the end of each interaction, if you've changed any code ensure that it's properly linted and formatted.
 
-## Git
+## Git or other version control
 
-- Don't use git without user approval. Don't commit or push unless you're explicitly asked to do so.
+- Don't use git (or any other version control tool) without user approval. Don't commit or push unless you're explicitly asked to do so.
 
 ## Plans
 
-- At the end of each plan, give me a list of unresolved questions to answer, if any.
-- Each plan should be concise and to the point.
-- Each plan should be presented as a list of actions to take followed by a list of unresolved questions.
+- Plans should be concise and to the point.
+- Present plan as a list of actions to take followed by a list of unresolved questions.
+- Once you're done implementing the current plan, provide follow-up suggestions of possible next steps.
+
+## Preferences
+
+- When you need to look up how a function / library works, prefer using `library-context` agent to clone and inspect source code directly.
