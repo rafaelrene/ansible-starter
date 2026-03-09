@@ -19,8 +19,8 @@ For piped installs that need a non-default repository or branch, pass explicit
 arguments to `bash`:
 
 ```bash
-url=https://raw.githubusercontent.com/rafaelrene/ansible-starter/refs/heads/t3code/migrate-ansible-to-bash-dotforge/install.sh
-curl -fsSL "$url" | bash -s -- --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge --cleanup-existing
+url=https://raw.githubusercontent.com/rafaelrene/ansible-starter/refs/heads/develop/install.sh
+curl -fsSL "$url" | bash -s -- --repo rafaelrene/ansible-starter --branch develop --cleanup-existing
 ```
 
 Bootstrap flags:
@@ -120,7 +120,6 @@ dotforge secrets pack /path/to/unpacked/dir
 - `unpack` decrypts the bundle into a temp directory and prints the path.
 - `pack` expects the same scoped tree, rebuilds `secrets/bundle.tar.age`,
   reapplies the SSH keys locally, and reminds you to commit the updated bundle.
-- The current passphrase remains `lucker`.
 
 ## Platform Notes
 
