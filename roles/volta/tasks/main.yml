@@ -1,3 +1,0 @@
----
-- name: Install node@lts
-  ansible.builtin.shell: volta install node

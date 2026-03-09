@@ -1,0 +1,34 @@
+anytype	cask		anytype	1
+discord	cask		discord	1
+ente	cask		ente	1
+ente-auth	cask		ente-auth	1
+fd	formula		fd	1
+font-hack-nerd-font	cask		font-hack-nerd-font	1
+font-jetbrains-mono	cask		font-jetbrains-mono	1
+font-jetbrains-mono-nerd-font	cask		font-jetbrains-mono-nerd-font	1
+ghostty	cask		ghostty	1
+go-task	formula	go-task/tap	go-task	1
+graphite	formula	withgraphite/tap	graphite	1
+helium-browser	cask		helium-browser	1
+htop	formula		htop	1
+jj	formula		jj	1
+lazygit	formula		lazygit	1
+mailspring	cask		mailspring	1
+neovim	formula		neovim	1
+nushell	formula		nushell	1
+onlyoffice	cask		onlyoffice	1
+opencode	formula	sst/tap	opencode	1
+openssh	formula		openssh	1
+proton-drive	cask		proton-drive	1
+raycast	cask		raycast	1
+ripgrep	formula		ripgrep	1
+sketchybar	formula	felixkratz/formulae	sketchybar	1
+standard-notes	cask		standard-notes	1
+tailscale-app	cask		tailscale-app	1
+tldr	formula		tldr	1
+tmux	formula		tmux	1
+tree-sitter-cli	formula		tree-sitter-cli	1
+turso	formula	tursodatabase/tap	turso	1
+volta	formula		volta	1
+zen	cask		zen	1
+zsh	formula		zsh	1

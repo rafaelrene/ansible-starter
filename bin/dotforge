@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DOTFORGE_SCRIPT_DIR=$(
+  cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P
+)
+DOTFORGE_ROOT=$(
+  cd -- "$DOTFORGE_SCRIPT_DIR/.." && pwd -P
+)
+
+# shellcheck source=lib/common.sh
+. "$DOTFORGE_ROOT/lib/common.sh"
+# shellcheck source=lib/platform.sh
+. "$DOTFORGE_ROOT/lib/platform.sh"
+# shellcheck source=lib/state.sh
+. "$DOTFORGE_ROOT/lib/state.sh"
+# shellcheck source=lib/catalog.sh
+. "$DOTFORGE_ROOT/lib/catalog.sh"
+# shellcheck source=lib/config.sh
+. "$DOTFORGE_ROOT/lib/config.sh"
+# shellcheck source=lib/packages.sh
+. "$DOTFORGE_ROOT/lib/packages.sh"
+# shellcheck source=lib/secrets.sh
+. "$DOTFORGE_ROOT/lib/secrets.sh"
+# shellcheck source=lib/assets.sh
+. "$DOTFORGE_ROOT/lib/assets.sh"
+# shellcheck source=lib/doctor.sh
+. "$DOTFORGE_ROOT/lib/doctor.sh"
+
+main() {
+  local command="${1:-apply}"
+
+  dotforge_init
+
+  case "$command" in
+    apply)
+      shift || true
+      dotforge_apply
+      ;;
+    doctor)
+      shift
+      doctor_run
+      ;;
+    pkg)
+      shift
+      pkg_command "$@"
+      ;;
+    secrets)
+      shift
+      secrets_command "$@"
+      ;;
+    help|-h|--help)
+      dotforge_usage
+      ;;
+    *)
+      die_with_fix \
+        "Unknown command: $command" \
+        "The command is not implemented by dotforge." \
+        "Run 'dotforge --help' to see the supported commands."
+      ;;
+  esac
+}
+
+dotforge_init() {
+  init_paths
+  with_exit_trap
+  ensure_dir "$DOTFORGE_CONFIG_DIR"
+  ensure_dir "$DOTFORGE_STATE_DIR"
+  ensure_dir "$DOTFORGE_BIN_DIR"
+}
+
+dotforge_apply() {
+  require_supported_platform
+  bootstrap_platform_prerequisites
+  ensure_sudo_session
+  start_sudo_keepalive
+  ensure_config_ready
+
+  local secrets_dir
+  secrets_dir=$(prepare_runtime_secrets_dir)
+
+  reconcile_packages
+  deploy_managed_assets "$secrets_dir"
+  run_post_install_steps
+  doctor_run
+}
+
+pkg_command() {
+  local subcommand="${1:-}"
+  local token="${2:-}"
+
+  case "$subcommand" in
+    add)
+      require_supported_platform
+      bootstrap_platform_prerequisites
+      ensure_sudo_session
+      start_sudo_keepalive
+      ensure_config_ready
+      pkg_add "$token"
+      doctor_run
+      ;;
+    rm)
+      require_supported_platform
+      bootstrap_platform_prerequisites
+      ensure_sudo_session
+      start_sudo_keepalive
+      ensure_config_ready
+      pkg_rm "$token"
+      doctor_run
+      ;;
+    *)
+      die_with_fix \
+        "Unsupported pkg subcommand: ${subcommand:-<empty>}" \
+        "dotforge pkg only supports add and rm." \
+        "Use 'dotforge pkg add <package>' or 'dotforge pkg rm <package>'."
+      ;;
+  esac
+}
+
+secrets_command() {
+  local subcommand="${1:-}"
+
+  require_supported_platform
+  bootstrap_platform_prerequisites
+  ensure_sudo_session
+  start_sudo_keepalive
+  ensure_config_ready
+
+  case "$subcommand" in
+    unpack)
+      secrets_unpack
+      doctor_run
+      ;;
+    pack)
+      shift
+      secrets_pack "${1:-}"
+      doctor_run
+      ;;
+    *)
+      die_with_fix \
+        "Unsupported secrets subcommand: ${subcommand:-<empty>}" \
+        "dotforge secrets only supports unpack and pack." \
+        "Use 'dotforge secrets unpack' or 'dotforge secrets pack <path>'."
+      ;;
+  esac
+}
+
+dotforge_usage() {
+  cat <<'EOF'
+Usage:
+  dotforge
+  dotforge doctor
+  dotforge pkg add <package-id|brew:name|yay:name>
+  dotforge pkg rm <package-id|brew:name|yay:name>
+  dotforge secrets unpack
+  dotforge secrets pack <path>
+EOF
+}
+
+main "$@"
