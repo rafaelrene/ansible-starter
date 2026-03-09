@@ -1,0 +1,288 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DOTFORGE_DEFAULT_GIT_REPOSITORY=rafaelrene/dotforge
+DOTFORGE_DEFAULT_GIT_BRANCH=master
+DOTFORGE_DEFAULT_INSTALL_HOME="$HOME/.local/share/dotforge"
+
+DOTFORGE_ARG_REPO=
+DOTFORGE_ARG_BRANCH=
+DOTFORGE_ARG_INSTALL_HOME=
+DOTFORGE_ARG_CLEANUP_EXISTING=0
+
+die() {
+  local what=$1
+  local cause=$2
+  local fix=$3
+  {
+    printf 'ERROR: %s\n' "$what"
+    printf 'Cause: %s\n' "$cause"
+    printf 'Fix: %s\n' "$fix"
+  } >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  install.sh
+  install.sh --repo <owner/repo> --branch <branch> [--install-home <path>] [--cleanup-existing]
+
+Direct execution with exported environment variables:
+  export DOTFORGE_GIT_REPOSITORY=owner/repo
+  export DOTFORGE_GIT_BRANCH=branch
+  ./install.sh
+
+Piped execution with explicit arguments:
+  curl -fsSL "$url" | bash -s -- --repo owner/repo --branch branch
+EOF
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --repo)
+        [[ $# -ge 2 ]] || die \
+          "Missing value for --repo." \
+          "install.sh expected a repository value after --repo." \
+          "Run 'install.sh --help' to see the supported bootstrap options."
+        DOTFORGE_ARG_REPO=$2
+        shift 2
+        ;;
+      --branch)
+        [[ $# -ge 2 ]] || die \
+          "Missing value for --branch." \
+          "install.sh expected a branch name after --branch." \
+          "Run 'install.sh --help' to see the supported bootstrap options."
+        DOTFORGE_ARG_BRANCH=$2
+        shift 2
+        ;;
+      --install-home)
+        [[ $# -ge 2 ]] || die \
+          "Missing value for --install-home." \
+          "install.sh expected a path after --install-home." \
+          "Run 'install.sh --help' to see the supported bootstrap options."
+        DOTFORGE_ARG_INSTALL_HOME=$2
+        shift 2
+        ;;
+      --cleanup-existing)
+        DOTFORGE_ARG_CLEANUP_EXISTING=1
+        shift
+        ;;
+      --help|-h)
+        usage
+        exit 0
+        ;;
+      *)
+        usage >&2
+        die \
+          "Unknown argument: $1" \
+          "install.sh only accepts --repo, --branch, --install-home, --cleanup-existing, and --help." \
+          "Remove the unsupported argument or run 'install.sh --help' for usage."
+        ;;
+    esac
+  done
+}
+
+resolve_config() {
+  DOTFORGE_GIT_REPOSITORY=${DOTFORGE_ARG_REPO:-${DOTFORGE_GIT_REPOSITORY:-$DOTFORGE_DEFAULT_GIT_REPOSITORY}}
+  DOTFORGE_GIT_BRANCH=${DOTFORGE_ARG_BRANCH:-${DOTFORGE_GIT_BRANCH:-$DOTFORGE_DEFAULT_GIT_BRANCH}}
+  DOTFORGE_INSTALL_HOME=${DOTFORGE_ARG_INSTALL_HOME:-${DOTFORGE_INSTALL_HOME:-$DOTFORGE_DEFAULT_INSTALL_HOME}}
+  DOTFORGE_CLEANUP_EXISTING=${DOTFORGE_ARG_CLEANUP_EXISTING:-0}
+}
+
+detect_platform() {
+  case "$(uname -s)" in
+    Darwin)
+      printf 'macos\n'
+      ;;
+    Linux)
+      if [[ -r /etc/os-release ]] && grep -Eq '^ID=arch$|^ID_LIKE=.*arch' /etc/os-release; then
+        printf 'arch\n'
+      else
+        printf 'unsupported\n'
+      fi
+      ;;
+    *)
+      printf 'unsupported\n'
+      ;;
+  esac
+}
+
+frontload_arch_sudo_if_needed() {
+  local platform=$1
+
+  if [[ "$platform" != "arch" ]]; then
+    return 0
+  fi
+
+  if command -v git >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if sudo -n true >/dev/null 2>&1; then
+    return 0
+  fi
+
+  sudo -v || die \
+    "sudo authentication failed." \
+    "install.sh could not obtain administrator privileges needed for bootstrap packages." \
+    "Retry the command, enter the correct password, and rerun install.sh."
+}
+
+ensure_git() {
+  local platform=$1
+
+  if command -v git >/dev/null 2>&1; then
+    return 0
+  fi
+
+  case "$platform" in
+    macos)
+      if ! xcode-select -p >/dev/null 2>&1; then
+        xcode-select --install >/dev/null 2>&1 || true
+        die \
+          "git is not available because Xcode Command Line Tools are missing." \
+          "macOS does not provide git until Command Line Tools are installed." \
+          "Complete the GUI installer started by 'xcode-select --install', then rerun install.sh."
+      fi
+      die \
+        "git is still unavailable after verifying Command Line Tools." \
+        "The system should provide git once Command Line Tools are installed, but it is not on PATH." \
+        "Open a new shell or fix the Command Line Tools installation, then rerun install.sh."
+      ;;
+    arch)
+      sudo pacman -Sy --needed --noconfirm git || die \
+        "Failed to install git with pacman." \
+        "install.sh needs git before it can clone dotforge." \
+        "Fix the pacman error above and rerun install.sh."
+      ;;
+    *)
+      die \
+        "Unsupported operating system." \
+        "install.sh only supports macOS and Arch Linux." \
+        "Run install.sh on macOS or Arch Linux."
+      ;;
+  esac
+}
+
+clone_url_from_slug() {
+  printf 'https://github.com/%s.git\n' "$1"
+}
+
+info() {
+  printf 'INFO: %s\n' "$*"
+}
+
+path_exists_for_cleanup() {
+  local path=$1
+  [[ -e "$path" || -L "$path" ]]
+}
+
+best_effort_remove_install_home() {
+  local path=$1
+  local reason=$2
+
+  if ! path_exists_for_cleanup "$path"; then
+    return 0
+  fi
+
+  info "Removing '$path' before re-cloning because $reason."
+  rm -rf "$path" || die \
+    "Failed to remove the existing install path '$path'." \
+    "install.sh could not clean the blocking bootstrap target before cloning." \
+    "Remove '$path' manually or fix filesystem permissions, then rerun install.sh."
+}
+
+clone_checkout() {
+  local clone_url=$1
+
+  git clone --branch "$DOTFORGE_GIT_BRANCH" "$clone_url" "$DOTFORGE_INSTALL_HOME" || die \
+    "Failed to clone dotforge." \
+    "git could not clone the configured repository and branch into '$DOTFORGE_INSTALL_HOME'." \
+    "Verify DOTFORGE_GIT_REPOSITORY/DOTFORGE_GIT_BRANCH and rerun install.sh."
+}
+
+update_checkout() {
+  local repo_dir=$1
+  local branch=$2
+
+  if [[ ! -d "$repo_dir/.git" ]]; then
+    if [[ "$DOTFORGE_CLEANUP_EXISTING" == "1" ]]; then
+      best_effort_remove_install_home "$repo_dir" "it is not a git checkout"
+      return 10
+    fi
+
+    die \
+      "The install directory '$repo_dir' already exists but is not a git checkout." \
+      "install.sh only knows how to update dotforge when the directory is a git repository." \
+      "Remove or rename '$repo_dir', then rerun install.sh."
+  fi
+
+  if [[ -n "$(git -C "$repo_dir" status --porcelain)" ]]; then
+    if [[ "$DOTFORGE_CLEANUP_EXISTING" == "1" ]]; then
+      best_effort_remove_install_home "$repo_dir" "the existing checkout has local changes"
+      return 10
+    fi
+
+    die \
+      "The existing dotforge checkout is dirty." \
+      "install.sh refuses to overwrite local changes in '$repo_dir'." \
+      "Commit, stash, or discard the local changes, then rerun install.sh."
+  fi
+
+  git -C "$repo_dir" fetch origin "$branch" || die \
+    "Failed to fetch dotforge updates." \
+    "git could not fetch the configured branch from origin." \
+    "Verify network access and the configured repository/branch, then rerun install.sh."
+  git -C "$repo_dir" checkout "$branch" >/dev/null 2>&1 || git -C "$repo_dir" checkout -B "$branch" "origin/$branch" >/dev/null 2>&1 || die \
+    "Failed to check out branch '$branch'." \
+    "git could not switch the existing checkout to the requested branch." \
+    "Verify that the branch exists on origin, then rerun install.sh."
+  git -C "$repo_dir" reset --hard "origin/$branch" >/dev/null 2>&1 || die \
+    "Failed to fast-forward the dotforge checkout." \
+    "git could not reset the clean checkout to the requested remote branch." \
+    "Verify that origin/$branch exists and rerun install.sh."
+}
+
+main() {
+  local platform
+  local clone_url
+  local update_status=0
+
+  parse_args "$@"
+  resolve_config
+
+  platform=$(detect_platform)
+  [[ "$platform" != "unsupported" ]] || die \
+    "Unsupported operating system." \
+    "install.sh only supports macOS and Arch Linux." \
+    "Run install.sh on macOS or Arch Linux."
+
+  frontload_arch_sudo_if_needed "$platform"
+  ensure_git "$platform"
+
+  mkdir -p "$(dirname -- "$DOTFORGE_INSTALL_HOME")"
+  clone_url=$(clone_url_from_slug "$DOTFORGE_GIT_REPOSITORY")
+
+  if path_exists_for_cleanup "$DOTFORGE_INSTALL_HOME"; then
+    if update_checkout "$DOTFORGE_INSTALL_HOME" "$DOTFORGE_GIT_BRANCH"; then
+      :
+    else
+      update_status=$?
+      if [[ $update_status -eq 10 ]]; then
+        clone_checkout "$clone_url"
+      else
+        exit "$update_status"
+      fi
+    fi
+  else
+    clone_checkout "$clone_url"
+  fi
+
+  export PATH="$DOTFORGE_INSTALL_HOME/bin:$PATH"
+  exec "$DOTFORGE_INSTALL_HOME/bin/dotforge"
+}
+
+main "$@"
