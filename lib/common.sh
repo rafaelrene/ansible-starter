@@ -64,6 +64,32 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+interactive_tty_path() {
+  printf '/dev/tty\n'
+}
+
+terminal_stdin_is_tty() {
+  [[ -t 0 ]]
+}
+
+restore_interactive_stdin() {
+  local tty_path
+
+  [[ "$DOTFORGE_NONINTERACTIVE" == "1" ]] && return 0
+  terminal_stdin_is_tty && return 0
+
+  tty_path=$(interactive_tty_path)
+  if [[ -n "$tty_path" && -r "$tty_path" ]]; then
+    exec <"$tty_path"
+    terminal_stdin_is_tty && return 0
+  fi
+
+  die_with_fix \
+    "An interactive terminal is required." \
+    "dotforge started without a TTY on stdin and could not reconnect to the current terminal." \
+    "Run dotforge from Terminal.app or another interactive shell. For headless runs, install Homebrew first and set DOTFORGE_NONINTERACTIVE=1 with DOTFORGE_PACKAGES and DOTFORGE_AGE_PASSPHRASE as needed."
+}
+
 trim() {
   local value=$1
   value=${value#"${value%%[![:space:]]*}"}

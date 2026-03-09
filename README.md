@@ -11,6 +11,9 @@ curl -fsSL https://raw.githubusercontent.com/rafaelrene/dotforge/master/install.
 
 `install.sh` clones or updates the repository into
 `~/.local/share/dotforge` and then runs `~/.local/share/dotforge/bin/dotforge`.
+This piped bootstrap remains supported for interactive Terminal installs. For
+headless macOS runs, Homebrew must already be installed first, and
+`DOTFORGE_NONINTERACTIVE=1` does not make the Homebrew bootstrap headless-safe.
 
 For piped installs that need a non-default repository or branch, pass explicit
 arguments to `bash`:
@@ -109,6 +112,8 @@ dotforge secrets pack /path/to/unpacked/dir
 - macOS:
   - `dotforge` requires Xcode Command Line Tools.
   - Homebrew is installed automatically if missing.
+  - In non-interactive runs, install Homebrew manually before invoking
+    `dotforge`.
 - Arch Linux:
   - `dotforge` bootstraps `yay` if it is missing.
   - `pacman` is used only for bootstrap prerequisites.

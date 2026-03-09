@@ -72,6 +72,7 @@ dotforge_init() {
 
 dotforge_apply() {
   require_supported_platform
+  restore_interactive_stdin
   bootstrap_platform_prerequisites
   ensure_sudo_session
   start_sudo_keepalive
@@ -93,6 +94,7 @@ pkg_command() {
   case "$subcommand" in
     add)
       require_supported_platform
+      restore_interactive_stdin
       bootstrap_platform_prerequisites
       ensure_sudo_session
       start_sudo_keepalive
@@ -102,6 +104,7 @@ pkg_command() {
       ;;
     rm)
       require_supported_platform
+      restore_interactive_stdin
       bootstrap_platform_prerequisites
       ensure_sudo_session
       start_sudo_keepalive
@@ -122,6 +125,7 @@ secrets_command() {
   local subcommand="${1:-}"
 
   require_supported_platform
+  restore_interactive_stdin
   bootstrap_platform_prerequisites
   ensure_sudo_session
   start_sudo_keepalive

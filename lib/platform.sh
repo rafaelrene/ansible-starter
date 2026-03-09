@@ -99,6 +99,13 @@ ensure_homebrew() {
     return 0
   fi
 
+  if [[ "$DOTFORGE_NONINTERACTIVE" == "1" ]]; then
+    die_with_fix \
+      "Homebrew must already be installed for non-interactive macOS runs." \
+      "Automatic Homebrew bootstrap requires an interactive terminal session." \
+      "Install Homebrew manually first, then rerun dotforge with DOTFORGE_NONINTERACTIVE=1."
+  fi
+
   info "Installing Homebrew."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || die_with_fix \
     "Homebrew installation failed." \
