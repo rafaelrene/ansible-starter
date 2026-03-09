@@ -2,9 +2,13 @@
 
 set -euo pipefail
 
-DOTFORGE_GIT_REPOSITORY=${DOTFORGE_GIT_REPOSITORY:-rafaelrene/dotforge}
-DOTFORGE_GIT_BRANCH=${DOTFORGE_GIT_BRANCH:-master}
-DOTFORGE_INSTALL_HOME=${DOTFORGE_INSTALL_HOME:-"$HOME/.local/share/dotforge"}
+DOTFORGE_DEFAULT_GIT_REPOSITORY=rafaelrene/dotforge
+DOTFORGE_DEFAULT_GIT_BRANCH=master
+DOTFORGE_DEFAULT_INSTALL_HOME="$HOME/.local/share/dotforge"
+
+DOTFORGE_ARG_REPO=
+DOTFORGE_ARG_BRANCH=
+DOTFORGE_ARG_INSTALL_HOME=
 
 die() {
   local what=$1
@@ -16,6 +20,70 @@ die() {
     printf 'Fix: %s\n' "$fix"
   } >&2
   exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  install.sh
+  install.sh --repo <owner/repo> --branch <branch> [--install-home <path>]
+
+Direct execution with exported environment variables:
+  export DOTFORGE_GIT_REPOSITORY=owner/repo
+  export DOTFORGE_GIT_BRANCH=branch
+  ./install.sh
+
+Piped execution with explicit arguments:
+  curl -fsSL "$url" | bash -s -- --repo owner/repo --branch branch
+EOF
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --repo)
+        [[ $# -ge 2 ]] || die \
+          "Missing value for --repo." \
+          "install.sh expected a repository value after --repo." \
+          "Run 'install.sh --help' to see the supported bootstrap options."
+        DOTFORGE_ARG_REPO=$2
+        shift 2
+        ;;
+      --branch)
+        [[ $# -ge 2 ]] || die \
+          "Missing value for --branch." \
+          "install.sh expected a branch name after --branch." \
+          "Run 'install.sh --help' to see the supported bootstrap options."
+        DOTFORGE_ARG_BRANCH=$2
+        shift 2
+        ;;
+      --install-home)
+        [[ $# -ge 2 ]] || die \
+          "Missing value for --install-home." \
+          "install.sh expected a path after --install-home." \
+          "Run 'install.sh --help' to see the supported bootstrap options."
+        DOTFORGE_ARG_INSTALL_HOME=$2
+        shift 2
+        ;;
+      --help|-h)
+        usage
+        exit 0
+        ;;
+      *)
+        usage >&2
+        die \
+          "Unknown argument: $1" \
+          "install.sh only accepts --repo, --branch, --install-home, and --help." \
+          "Remove the unsupported argument or run 'install.sh --help' for usage."
+        ;;
+    esac
+  done
+}
+
+resolve_config() {
+  DOTFORGE_GIT_REPOSITORY=${DOTFORGE_ARG_REPO:-${DOTFORGE_GIT_REPOSITORY:-$DOTFORGE_DEFAULT_GIT_REPOSITORY}}
+  DOTFORGE_GIT_BRANCH=${DOTFORGE_ARG_BRANCH:-${DOTFORGE_GIT_BRANCH:-$DOTFORGE_DEFAULT_GIT_BRANCH}}
+  DOTFORGE_INSTALL_HOME=${DOTFORGE_ARG_INSTALL_HOME:-${DOTFORGE_INSTALL_HOME:-$DOTFORGE_DEFAULT_INSTALL_HOME}}
 }
 
 detect_platform() {
@@ -109,6 +177,9 @@ update_checkout() {
 main() {
   local platform
   local clone_url
+
+  parse_args "$@"
+  resolve_config
 
   platform=$(detect_platform)
   [[ "$platform" != "unsupported" ]] || die \

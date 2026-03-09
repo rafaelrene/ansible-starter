@@ -12,12 +12,25 @@ curl -fsSL https://raw.githubusercontent.com/rafaelrene/dotforge/master/install.
 `install.sh` clones or updates the repository into
 `~/.local/share/dotforge` and then runs `~/.local/share/dotforge/bin/dotforge`.
 
+For piped installs that need a non-default repository or branch, pass explicit
+arguments to `bash`:
+
+```bash
+url=https://raw.githubusercontent.com/rafaelrene/ansible-starter/refs/heads/t3code/migrate-ansible-to-bash-dotforge/install.sh
+curl -fsSL "$url" | bash -s -- --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge
+```
+
 Bootstrap environment variables:
 
 ```bash
 DOTFORGE_GIT_REPOSITORY=rafaelrene/dotforge
 DOTFORGE_GIT_BRANCH=master
 ```
+
+When running `curl ... | bash`, shell-local variables do not cross the pipe into
+the child `bash` process unless you export them. Use exported environment
+variables for direct execution, or prefer the explicit `bash -s -- ...` flags
+shown above.
 
 ## Commands
 
