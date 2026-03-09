@@ -13,13 +13,8 @@ prompt_for_age_passphrase() {
       "Set DOTFORGE_AGE_PASSPHRASE before rerunning dotforge."
   fi
 
-  local passphrase
-  printf 'Enter age passphrase: ' >&2
-  stty -echo
-  IFS= read -r passphrase
-  stty echo
-  printf '\n' >&2
-  printf '%s' "$passphrase"
+  tty_print 'Enter age passphrase: '
+  tty_read_secret
 }
 
 age_run() {

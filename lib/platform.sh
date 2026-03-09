@@ -32,6 +32,35 @@ require_supported_platform() {
   fi
 }
 
+homebrew_candidate_paths() {
+  printf '/opt/homebrew/bin/brew\n'
+  printf '/usr/local/bin/brew\n'
+}
+
+hydrate_homebrew_environment() {
+  local brew_path=""
+  local candidate
+
+  if command_exists brew; then
+    brew_path=$(command -v brew)
+  else
+    while IFS= read -r candidate; do
+      [[ -n "$candidate" ]] || continue
+      if [[ -x "$candidate" ]]; then
+        brew_path=$candidate
+        break
+      fi
+    done <<EOF
+$(homebrew_candidate_paths)
+EOF
+  fi
+
+  [[ -n "$brew_path" ]] || return 1
+
+  eval "$("$brew_path" shellenv)"
+  command_exists brew
+}
+
 ensure_sudo_session() {
   if sudo -n true >/dev/null 2>&1; then
     return 0
@@ -45,7 +74,7 @@ ensure_sudo_session() {
   fi
 
   info "Requesting sudo access up front."
-  sudo -v || die_with_fix \
+  run_with_interactive_tty sudo -v || die_with_fix \
     "sudo authentication failed." \
     "dotforge could not obtain administrator privileges needed for package installation." \
     "Retry the command, enter the correct password, and rerun dotforge."
@@ -61,7 +90,7 @@ start_sudo_keepalive() {
       sudo -n true >/dev/null 2>&1 || exit 0
       sleep 30
     done
-  ) &
+  ) </dev/null &
   DOTFORGE_SUDO_KEEPALIVE_PID=$!
   register_cleanup "kill $DOTFORGE_SUDO_KEEPALIVE_PID >/dev/null 2>&1"
 }
@@ -96,6 +125,14 @@ ensure_macos_command_line_tools() {
 
 ensure_homebrew() {
   if command_exists brew; then
+    hydrate_homebrew_environment || die_with_fix \
+      "Homebrew is installed but could not be loaded into the current shell." \
+      "dotforge found Homebrew on PATH, but 'brew shellenv' did not complete successfully." \
+      "Run 'eval \"$(brew shellenv)\"' manually, verify Homebrew works, and rerun dotforge."
+    return 0
+  fi
+
+  if hydrate_homebrew_environment; then
     return 0
   fi
 
@@ -111,10 +148,20 @@ ensure_homebrew() {
     "Homebrew installation failed." \
     "The official Homebrew installer exited with an error." \
     "Resolve the Homebrew installer error shown above, then rerun dotforge."
+
+  hydrate_homebrew_environment || die_with_fix \
+    "Homebrew was installed but could not be loaded into the current shell." \
+    "dotforge completed the Homebrew installer, but the new Homebrew environment could not be imported." \
+    "Run 'eval \"$(/opt/homebrew/bin/brew shellenv)\"' or 'eval \"$(/usr/local/bin/brew shellenv)\"' as appropriate, then rerun dotforge."
 }
 
 ensure_brew_prerequisite() {
   local package=$1
+  hydrate_homebrew_environment || die_with_fix \
+    "Homebrew is required but unavailable in the current shell." \
+    "dotforge could not locate a working Homebrew installation before checking prerequisite packages." \
+    "Verify that Homebrew is installed and working, then rerun dotforge."
+
   if brew list --formula "$package" >/dev/null 2>&1; then
     return 0
   fi

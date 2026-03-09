@@ -75,15 +75,18 @@ interactive_package_selection() {
 $(catalog_default_ids)
 EOF
 
-  info "Configure package defaults. Commands: toggle <number>, all, none, done"
+  tty_println "Configure package defaults. Commands: toggle <number>, all, none, done. Press Enter to accept defaults."
 
   while true; do
     print_package_selection
-    printf 'selection> '
-    IFS= read -r line
+    tty_print 'selection> '
+    line=$(tty_read_line)
     line=$(trim "$line")
 
     case "$line" in
+      "")
+        break
+        ;;
       done)
         break
         ;;
@@ -102,8 +105,8 @@ EOF
     esac
   done
 
-  printf 'Extra packages (comma separated, use brew: or yay: prefixes, blank for none): '
-  IFS= read -r line
+  tty_print 'Extra packages (comma separated, use brew: or yay: prefixes, blank for none): '
+  line=$(tty_read_line)
   line=$(trim "$line")
 
   if [[ -n "$line" ]]; then
@@ -122,12 +125,12 @@ print_package_selection() {
   local index=1
   local item
 
-  printf '\n'
+  tty_println
   for item in "${DOTFORGE_PACKAGE_DEFAULTS[@]}"; do
     if contains_line "$item" "${DOTFORGE_PACKAGE_SELECTED[@]}"; then
-      printf ' [%s] %s. %s\n' "x" "$index" "$item"
+      tty_println " [x] $index. $item"
     else
-      printf ' [%s] %s. %s\n' " " "$index" "$item"
+      tty_println " [ ] $index. $item"
     fi
     index=$((index + 1))
   done

@@ -68,6 +68,75 @@ interactive_tty_path() {
   printf '/dev/tty\n'
 }
 
+ensure_interactive_tty_available() {
+  local tty_path
+
+  tty_path=$(interactive_tty_path)
+  if [[ -n "$tty_path" && -r "$tty_path" && -w "$tty_path" ]]; then
+    printf '%s\n' "$tty_path"
+    return 0
+  fi
+
+  die_with_fix \
+    "An interactive terminal is required." \
+    "dotforge could not access the controlling terminal for interactive prompts." \
+    "Run dotforge from Terminal.app or another interactive shell. For headless runs, install Homebrew first and set DOTFORGE_NONINTERACTIVE=1 with DOTFORGE_PACKAGES and DOTFORGE_AGE_PASSPHRASE as needed."
+}
+
+tty_print() {
+  local tty_path
+  tty_path=$(ensure_interactive_tty_available)
+  printf '%s' "$*" >"$tty_path"
+}
+
+tty_println() {
+  local tty_path
+  tty_path=$(ensure_interactive_tty_available)
+  printf '%s\n' "$*" >"$tty_path"
+}
+
+tty_read_line() {
+  local tty_path
+  local line=""
+
+  tty_path=$(ensure_interactive_tty_available)
+  IFS= read -r line <"$tty_path" || true
+  printf '%s' "$line"
+}
+
+tty_read_secret() {
+  local tty_path
+  local passphrase=""
+  local stty_state
+
+  tty_path=$(ensure_interactive_tty_available)
+  stty_state=$(stty -g <"$tty_path") || die_with_fix \
+    "Failed to configure terminal input." \
+    "dotforge could not read the current terminal settings before prompting for secret input." \
+    "Retry the command in a normal interactive terminal session."
+
+  stty -echo <"$tty_path" || die_with_fix \
+    "Failed to disable terminal echo." \
+    "dotforge could not switch the terminal into hidden-input mode for secret entry." \
+    "Retry the command in a normal interactive terminal session."
+
+  IFS= read -r passphrase <"$tty_path" || true
+
+  stty "$stty_state" <"$tty_path" >/dev/null 2>&1 || die_with_fix \
+    "Failed to restore terminal echo." \
+    "dotforge could not restore the terminal settings after secret input." \
+    "Run 'stty sane' in your terminal if the prompt stays broken, then rerun dotforge."
+
+  printf '\n' >"$tty_path"
+  printf '%s' "$passphrase"
+}
+
+run_with_interactive_tty() {
+  local tty_path
+  tty_path=$(ensure_interactive_tty_available)
+  "$@" <"$tty_path" >"$tty_path" 2>"$tty_path"
+}
+
 terminal_stdin_is_tty() {
   [[ -t 0 ]]
 }
@@ -78,9 +147,8 @@ restore_interactive_stdin() {
   [[ "$DOTFORGE_NONINTERACTIVE" == "1" ]] && return 0
   terminal_stdin_is_tty && return 0
 
-  tty_path=$(interactive_tty_path)
-  if [[ -n "$tty_path" && -r "$tty_path" ]]; then
-    exec <"$tty_path"
+  tty_path=$(ensure_interactive_tty_available)
+  if [[ -n "$tty_path" ]] && exec <"$tty_path"; then
     terminal_stdin_is_tty && return 0
   fi
 
