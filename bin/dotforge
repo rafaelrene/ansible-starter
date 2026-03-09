@@ -19,6 +19,8 @@ DOTFORGE_ROOT=$(
 . "$DOTFORGE_ROOT/lib/catalog.sh"
 # shellcheck source=lib/config.sh
 . "$DOTFORGE_ROOT/lib/config.sh"
+# shellcheck source=lib/preflight.sh
+. "$DOTFORGE_ROOT/lib/preflight.sh"
 # shellcheck source=lib/packages.sh
 . "$DOTFORGE_ROOT/lib/packages.sh"
 # shellcheck source=lib/secrets.sh
@@ -73,9 +75,7 @@ dotforge_init() {
 dotforge_apply() {
   require_supported_platform
   restore_interactive_stdin
-  bootstrap_platform_prerequisites
-  ensure_sudo_session
-  start_sudo_keepalive
+  dotforge_preflight_collect apply
   ensure_config_ready
 
   local secrets_dir
@@ -95,21 +95,19 @@ pkg_command() {
     add)
       require_supported_platform
       restore_interactive_stdin
-      bootstrap_platform_prerequisites
-      ensure_sudo_session
-      start_sudo_keepalive
+      dotforge_preflight_collect pkg add
       ensure_config_ready
       pkg_add "$token"
+      run_post_install_steps
       doctor_run
       ;;
     rm)
       require_supported_platform
       restore_interactive_stdin
-      bootstrap_platform_prerequisites
-      ensure_sudo_session
-      start_sudo_keepalive
+      dotforge_preflight_collect pkg rm
       ensure_config_ready
       pkg_rm "$token"
+      run_post_install_steps
       doctor_run
       ;;
     *)
@@ -126,9 +124,7 @@ secrets_command() {
 
   require_supported_platform
   restore_interactive_stdin
-  bootstrap_platform_prerequisites
-  ensure_sudo_session
-  start_sudo_keepalive
+  dotforge_preflight_collect secrets "$subcommand"
   ensure_config_ready
 
   case "$subcommand" in

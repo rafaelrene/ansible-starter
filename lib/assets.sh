@@ -128,19 +128,75 @@ deploy_opencode_assets() {
   fi
 }
 
+install_tmux_plugins() {
+  command_exists tmux || die_with_fix \
+    "tmux is selected but the 'tmux' command is not available." \
+    "The package manager step did not leave a working tmux installation." \
+    "Fix the tmux package installation and rerun dotforge."
+
+  local conf_path="$HOME/.config/tmux/tmux.conf"
+  local installer="$HOME/.config/tmux/tpm/bin/install_plugins"
+  local started_session=0
+  local session_name="dotforge-bootstrap-$$"
+
+  [[ -f "$conf_path" ]] || die_with_fix \
+    "The tmux config '$conf_path' is missing." \
+    "dotforge could not load tmux before installing TPM plugins." \
+    "Verify the managed tmux assets and rerun dotforge."
+
+  [[ -x "$installer" ]] || die_with_fix \
+    "The TPM installer '$installer' is missing." \
+    "dotforge could not find the vendored tmux plugin installer." \
+    "Verify the tmux assets and rerun dotforge."
+
+  if ! tmux ls >/dev/null 2>&1; then
+    tmux new-session -d -s "$session_name" || die_with_fix \
+      "Failed to start a temporary tmux server." \
+      "dotforge could not create the detached tmux session needed for TPM setup." \
+      "Verify that tmux works normally and rerun dotforge."
+    started_session=1
+  fi
+
+  tmux source-file "$conf_path" >/dev/null 2>&1 || die_with_fix \
+    "Failed to source '$conf_path' in tmux." \
+    "tmux rejected the managed configuration while dotforge was preparing TPM." \
+    "Fix the tmux config error and rerun dotforge."
+
+  "$installer" >/dev/null 2>&1 || die_with_fix \
+    "Failed to install tmux plugins with TPM." \
+    "dotforge could not install the managed tmux plugins, including Catppuccin." \
+    "Resolve the TPM error and rerun dotforge."
+
+  tmux source-file "$conf_path" >/dev/null 2>&1 || die_with_fix \
+    "Failed to reload '$conf_path' after installing tmux plugins." \
+    "tmux could not apply the managed theme and plugin settings after TPM completed." \
+    "Fix the tmux config or plugin state and rerun dotforge."
+
+  if [[ $started_session -eq 1 ]]; then
+    tmux kill-session -t "$session_name" >/dev/null 2>&1 || true
+  fi
+}
+
 run_post_install_steps() {
   local csv
   csv=$(config_package_tokens)
-  case ",$csv," in
-    *,volta,*)
-      command_exists volta || die_with_fix \
-        "Volta is selected but the 'volta' command is not available." \
-        "The package manager step did not leave a working Volta installation." \
-        "Fix the Volta package installation and rerun dotforge."
-      volta install node || die_with_fix \
-        "Failed to install Node with Volta." \
-        "The post-install Volta step did not complete successfully." \
-        "Fix the Volta error shown above and rerun dotforge."
-      ;;
-  esac
+
+  if csv_contains_token "$csv" volta; then
+    command_exists volta || die_with_fix \
+      "Volta is selected but the 'volta' command is not available." \
+      "The package manager step did not leave a working Volta installation." \
+      "Fix the Volta package installation and rerun dotforge."
+    volta install node || die_with_fix \
+      "Failed to install Node with Volta." \
+      "The post-install Volta step did not complete successfully." \
+      "Fix the Volta error shown above and rerun dotforge."
+  fi
+
+  if csv_contains_token "$csv" tmux; then
+    install_tmux_plugins
+  fi
+
+  if csv_contains_token "$csv" zsh; then
+    ensure_login_shell_is_zsh
+  fi
 }

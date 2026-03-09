@@ -97,7 +97,7 @@ if [[ "\${1:-}" == "list" ]]; then
   exit 1
 fi
 if [[ "\${1:-}" == "install" ]]; then
-  printf "installed:%s\n" "\${2:-}" >>"$test_root/brew.log"
+  printf "installed:%s\n" "\$*" >>"$test_root/brew.log"
   exit 0
 fi
 exit 0
@@ -147,7 +147,7 @@ if [[ "\${1:-}" == "list" ]]; then
   exit 1
 fi
 if [[ "\${1:-}" == "install" ]]; then
-  printf "installed:%s\n" "\${2:-}" >>"$test_root/brew.log"
+  printf "installed:%s\n" "\$*" >>"$test_root/brew.log"
   exit 0
 fi
 exit 0
@@ -162,11 +162,11 @@ EOF
       printf "%s\n" "$fake_bin/brew"
     }
     PATH=/usr/bin:/bin
-    ensure_brew_prerequisite age
+    ensure_brew_prerequisites age python
     cat "$test_root/brew.log"
   '
 )
-assert_contains "installed:age" "$brew_prerequisite_output" "ensure_brew_prerequisite should hydrate Homebrew before install"
+assert_contains "installed:install age python" "$brew_prerequisite_output" "ensure_brew_prerequisites should batch missing formula installs"
 
 set +e
 noninteractive_homebrew_output=$(
@@ -316,6 +316,79 @@ passphrase_output=$(
 )
 assert_eq "expected-passphrase" "$passphrase_output" "prompt_for_age_passphrase should read via tty_read_secret"
 
+config_migration_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-config-migrate.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_CONFIG_DIR="$test_root/config"
+    DOTFORGE_CONFIG_FILE="$DOTFORGE_CONFIG_DIR/config"
+    mkdir -p "$DOTFORGE_CONFIG_DIR"
+    printf "%s\n" "DOTFORGE_PACKAGES=\"fd,tmux\"" >"$DOTFORGE_CONFIG_FILE"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/config.sh"
+    auto_migrate_package_tokens
+    printf "%s\n" "$DOTFORGE_PACKAGES"
+    auto_migrate_package_tokens
+    printf "%s\n" "$DOTFORGE_PACKAGES"
+  '
+)
+assert_eq $'fd,tmux,fzf,starship\nfd,tmux,fzf,starship' "$config_migration_output" "config migration should append fzf and starship exactly once"
+
+preflight_output=$(
+  bash -lc '
+    set -euo pipefail
+    DOTFORGE_ROOT="'"$ROOT"'"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/config.sh"
+    . "'"$ROOT"'/lib/platform.sh"
+    . "'"$ROOT"'/lib/secrets.sh"
+    . "'"$ROOT"'/lib/preflight.sh"
+    steps=()
+    collect_config_inputs_if_needed() { steps+=("config"); }
+    ensure_sudo_session() { steps+=("sudo"); }
+    start_sudo_keepalive() { steps+=("keepalive"); }
+    bootstrap_platform_prerequisites() { steps+=("bootstrap"); }
+    ensure_age_passphrase_ready() { steps+=("passphrase"); }
+    detect_shell_context() { steps+=("shell"); }
+    validate_age_bundle_passphrase() { steps+=("validate"); }
+    info() { :; }
+    dotforge_preflight_collect apply
+    printf "%s\n" "${steps[*]}"
+  '
+)
+assert_eq "config sudo keepalive bootstrap passphrase shell validate" "$preflight_output" "preflight should front-load config, sudo, bootstrap, passphrase, shell detection, and validation"
+
+secrets_pack_prompt_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-secrets-pack.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
+    mkdir -p "$test_root/source/ssh"
+    : >"$test_root/source/ssh/key"
+    : >"$test_root/prompt.log"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/secrets.sh"
+    prompt_for_age_passphrase() {
+      printf "prompt\n" >>"$test_root/prompt.log"
+      printf "expected-passphrase"
+    }
+    age_run() { return 0; }
+    deploy_ssh_assets() { :; }
+    info() { :; }
+    prepare_runtime_secrets_dir() {
+      ensure_age_passphrase_ready
+      printf "%s\n" "$test_root/source"
+    }
+    secrets_pack "$test_root/source"
+    wc -l <"$test_root/prompt.log" | awk "{print \$1}"
+  '
+)
+assert_eq "1" "$secrets_pack_prompt_output" "secrets_pack should only prompt for the age passphrase once per run"
+
 sudo_output=$(
   bash -lc '
     set -euo pipefail
@@ -341,5 +414,73 @@ sudo_output=$(
 )
 assert_contains "tty:sudo -v" "$sudo_output" "ensure_sudo_session should use the tty helper when sudo prompts are required"
 assert_contains "-n true" "$sudo_output" "ensure_sudo_session should preserve the non-interactive sudo fast path check"
+
+tmux_install_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-tmux-install.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    export HOME="$test_root/home"
+    mkdir -p "$HOME/.config/tmux/tpm/bin"
+    : >"$HOME/.config/tmux/tmux.conf"
+    cat >"$HOME/.config/tmux/tpm/bin/install_plugins" <<EOF
+#!/usr/bin/env bash
+printf "installer\n" >>"$HOME/tmux.log"
+EOF
+    chmod +x "$HOME/.config/tmux/tpm/bin/install_plugins"
+    DOTFORGE_ROOT="'"$ROOT"'"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/config.sh"
+    . "'"$ROOT"'/lib/platform.sh"
+    . "'"$ROOT"'/lib/assets.sh"
+    command_exists() {
+      [[ "$1" == "tmux" ]] && return 0
+      command -v "$1" >/dev/null 2>&1
+    }
+    tmux() {
+      printf "tmux:%s\n" "$*" >>"$HOME/tmux.log"
+      if [[ "${1:-}" == "ls" ]]; then
+        return 1
+      fi
+      return 0
+    }
+    install_tmux_plugins
+    cat "$HOME/tmux.log"
+  '
+)
+assert_contains "tmux:new-session -d -s" "$tmux_install_output" "install_tmux_plugins should start a temporary tmux server when needed"
+assert_contains "tmux:source-file" "$tmux_install_output" "install_tmux_plugins should source the tmux config"
+assert_contains "installer" "$tmux_install_output" "install_tmux_plugins should run the TPM installer"
+assert_contains "tmux:kill-session -t" "$tmux_install_output" "install_tmux_plugins should clean up the temporary tmux session"
+
+shell_switch_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-shell-switch.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    fake_bin="$test_root/bin"
+    mkdir -p "$fake_bin"
+    cat >"$fake_bin/zsh" <<EOF
+#!/usr/bin/env bash
+exit 0
+EOF
+    chmod +x "$fake_bin/zsh"
+    export PATH="$fake_bin:$PATH"
+    DOTFORGE_ROOT="'"$ROOT"'"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/platform.sh"
+    : >"$test_root/sudo.log"
+    detect_shell_context() {
+      DOTFORGE_LOGIN_SHELL=/bin/bash
+    }
+    sudo() {
+      printf "sudo:%s\n" "$*" >>"$test_root/sudo.log"
+      return 0
+    }
+    ensure_login_shell_is_zsh
+    cat "$test_root/sudo.log"
+  '
+)
+assert_contains "sudo:chsh -s" "$shell_switch_output" "ensure_login_shell_is_zsh should attempt to switch the login shell with sudo chsh"
 
 printf 'platform tests passed\n'

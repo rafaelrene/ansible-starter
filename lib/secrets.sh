@@ -17,6 +17,14 @@ prompt_for_age_passphrase() {
   tty_read_secret
 }
 
+ensure_age_passphrase_ready() {
+  if [[ -n "$DOTFORGE_AGE_PASSPHRASE" ]]; then
+    return 0
+  fi
+
+  DOTFORGE_AGE_PASSPHRASE=$(prompt_for_age_passphrase)
+}
+
 age_run() {
   local mode=$1
   shift
@@ -34,6 +42,8 @@ age_run() {
 }
 
 validate_age_bundle_passphrase() {
+  ensure_age_passphrase_ready
+
   local temp_file
   temp_file=$(mktemp "${TMPDIR:-/tmp}/dotforge-age-check.XXXXXX")
   register_cleanup "rm -f '$temp_file'"
@@ -49,7 +59,7 @@ prepare_runtime_secrets_dir() {
     "dotforge expected '$DOTFORGE_SECRETS_BUNDLE' to exist before applying SSH secrets." \
     "Create the bundle with 'dotforge secrets pack <path>' or restore it from git."
 
-  DOTFORGE_AGE_PASSPHRASE=$(prompt_for_age_passphrase)
+  ensure_age_passphrase_ready
   validate_age_bundle_passphrase
 
   local temp_dir archive_path
@@ -81,7 +91,7 @@ secrets_unpack() {
     "dotforge cannot unpack secrets because '$DOTFORGE_SECRETS_BUNDLE' does not exist." \
     "Create the bundle first or restore it from git."
 
-  DOTFORGE_AGE_PASSPHRASE=$(prompt_for_age_passphrase)
+  ensure_age_passphrase_ready
   validate_age_bundle_passphrase
 
   local temp_dir archive_path
@@ -114,7 +124,7 @@ secrets_pack() {
     "dotforge expects the same scoped tree emitted by 'dotforge secrets unpack'." \
     "Point the command at a directory with an ssh/ subtree and rerun it."
 
-  DOTFORGE_AGE_PASSPHRASE=$(prompt_for_age_passphrase)
+  ensure_age_passphrase_ready
 
   local temp_dir archive_path
   temp_dir=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-secrets-pack.XXXXXX")

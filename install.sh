@@ -104,6 +104,27 @@ detect_platform() {
   esac
 }
 
+frontload_arch_sudo_if_needed() {
+  local platform=$1
+
+  if [[ "$platform" != "arch" ]]; then
+    return 0
+  fi
+
+  if command -v git >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if sudo -n true >/dev/null 2>&1; then
+    return 0
+  fi
+
+  sudo -v || die \
+    "sudo authentication failed." \
+    "install.sh could not obtain administrator privileges needed for bootstrap packages." \
+    "Retry the command, enter the correct password, and rerun install.sh."
+}
+
 ensure_git() {
   local platform=$1
 
@@ -187,6 +208,7 @@ main() {
     "install.sh only supports macOS and Arch Linux." \
     "Run install.sh on macOS or Arch Linux."
 
+  frontload_arch_sudo_if_needed "$platform"
   ensure_git "$platform"
 
   mkdir -p "$(dirname -- "$DOTFORGE_INSTALL_HOME")"

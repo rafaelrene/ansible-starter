@@ -52,6 +52,9 @@ dotforge secrets pack <path>
   secrets, PATH wiring, and post-install state such as Volta-managed Node.
 - `dotforge pkg add` and `dotforge pkg rm` update
   `~/.config/dotforge/config`, reconcile packages immediately, then run doctor.
+- Mutating commands collect required interactive input up front so package
+  selection, sudo authentication, and the age passphrase are not re-requested
+  later in the same run.
 
 ## Config
 
@@ -61,7 +64,7 @@ Example:
 
 ```bash
 # shellcheck shell=bash
-DOTFORGE_PACKAGES="fd,ghostty,neovim,tmux,volta,brew:watch"
+DOTFORGE_PACKAGES="fd,fzf,ghostty,neovim,starship,tmux,volta,brew:watch"
 ```
 
 - Built-in packages use canonical IDs from [`catalog/macos.tsv`](catalog/macos.tsv)
@@ -69,6 +72,7 @@ DOTFORGE_PACKAGES="fd,ghostty,neovim,tmux,volta,brew:watch"
 - Extra packages must be prefixed with `brew:` on macOS or `yay:` on Arch.
 - On first run, `dotforge` prompts you to toggle the default package set and
   optionally add extra packages.
+- Existing configs are auto-migrated once to add `fzf` and `starship`.
 
 Runtime environment variables:
 
@@ -115,8 +119,22 @@ dotforge secrets pack /path/to/unpacked/dir
   - In non-interactive runs, install Homebrew manually before invoking
     `dotforge`.
 - Arch Linux:
+  - `install.sh` asks for sudo up front when it must bootstrap `git` with
+    `pacman`.
   - `dotforge` bootstraps `yay` if it is missing.
   - `pacman` is used only for bootstrap prerequisites.
+
+## Shell Notes
+
+`dotforge` deploys zsh and starship config and will attempt to switch your login
+shell to zsh after install when zsh is selected.
+
+To check your shell state manually:
+
+```bash
+ps -p $$ -o comm=
+echo "$SHELL"
+```
 
 ## Managed Paths
 

@@ -183,14 +183,18 @@ doctor_check_path_injection() {
 doctor_check_post_install() {
   local csv
   csv=$(config_package_tokens)
-  case ",$csv," in
-    *,volta,*)
-      command_exists volta || doctor_error "Volta is selected but the 'volta' command is missing."
-      if command_exists volta; then
-        volta which node >/dev/null 2>&1 || doctor_error "Volta is installed but does not manage a Node runtime yet."
-      fi
-      ;;
-  esac
+
+  if csv_contains_token "$csv" volta; then
+    command_exists volta || doctor_error "Volta is selected but the 'volta' command is missing."
+    if command_exists volta; then
+      volta which node >/dev/null 2>&1 || doctor_error "Volta is installed but does not manage a Node runtime yet."
+    fi
+  fi
+
+  if csv_contains_token "$csv" tmux; then
+    [[ -d "$HOME/.config/tmux/plugins/catppuccin" ]] || doctor_error \
+      "tmux is selected but the Catppuccin TPM plugin is missing from '$HOME/.config/tmux/plugins/catppuccin'."
+  fi
 }
 
 doctor_check_unpacked_dir() {

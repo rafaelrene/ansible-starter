@@ -3,6 +3,7 @@ discord	cask		discord	1
 ente	cask		ente	1
 ente-auth	cask		ente-auth	1
 fd	formula		fd	1
+fzf	formula		fzf	1
 font-hack-nerd-font	cask		font-hack-nerd-font	1
 font-jetbrains-mono	cask		font-jetbrains-mono	1
 font-jetbrains-mono-nerd-font	cask		font-jetbrains-mono-nerd-font	1
@@ -23,6 +24,7 @@ proton-drive	cask		proton-drive	1
 raycast	cask		raycast	1
 ripgrep	formula		ripgrep	1
 sketchybar	formula	felixkratz/formulae	sketchybar	1
+starship	formula		starship	1
 standard-notes	cask		standard-notes	1
 tailscale-app	cask		tailscale-app	1
 tldr	formula		tldr	1

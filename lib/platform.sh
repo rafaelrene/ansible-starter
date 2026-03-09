@@ -32,6 +32,49 @@ require_supported_platform() {
   fi
 }
 
+current_shell_path() {
+  local shell_path=""
+
+  shell_path=$(ps -p $$ -o comm= 2>/dev/null | awk 'NR == 1 {print $1}') || true
+  shell_path=$(trim "$shell_path")
+  if [[ -n "$shell_path" ]]; then
+    printf '%s\n' "$shell_path"
+    return 0
+  fi
+
+  printf '%s\n' "${SHELL:-}"
+}
+
+login_shell_path() {
+  local shell_path=""
+
+  case "$DOTFORGE_PLATFORM" in
+    macos)
+      shell_path=$(dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '/UserShell:/ {print $2}')
+      ;;
+    arch)
+      if command_exists getent; then
+        shell_path=$(getent passwd "$USER" | awk -F: 'NR == 1 {print $NF}')
+      elif [[ -r /etc/passwd ]]; then
+        shell_path=$(awk -F: -v user="$USER" '$1 == user {print $NF; exit}' /etc/passwd)
+      fi
+      ;;
+  esac
+
+  shell_path=$(trim "${shell_path:-}")
+  if [[ -n "$shell_path" ]]; then
+    printf '%s\n' "$shell_path"
+    return 0
+  fi
+
+  printf '%s\n' "${SHELL:-}"
+}
+
+detect_shell_context() {
+  DOTFORGE_CURRENT_SHELL=$(current_shell_path)
+  DOTFORGE_LOGIN_SHELL=$(login_shell_path)
+}
+
 homebrew_candidate_paths() {
   printf '/opt/homebrew/bin/brew\n'
   printf '/usr/local/bin/brew\n'
@@ -101,8 +144,7 @@ bootstrap_platform_prerequisites() {
     macos)
       ensure_macos_command_line_tools
       ensure_homebrew
-      ensure_brew_prerequisite age
-      ensure_brew_prerequisite python
+      ensure_brew_prerequisites age python
       ;;
     arch)
       ensure_arch_packages_installed base-devel git age python
@@ -155,21 +197,27 @@ ensure_homebrew() {
     "Run 'eval \"$(/opt/homebrew/bin/brew shellenv)\"' or 'eval \"$(/usr/local/bin/brew shellenv)\"' as appropriate, then rerun dotforge."
 }
 
-ensure_brew_prerequisite() {
-  local package=$1
+ensure_brew_prerequisites() {
+  local package
+  local missing=()
+
   hydrate_homebrew_environment || die_with_fix \
     "Homebrew is required but unavailable in the current shell." \
     "dotforge could not locate a working Homebrew installation before checking prerequisite packages." \
     "Verify that Homebrew is installed and working, then rerun dotforge."
 
-  if brew list --formula "$package" >/dev/null 2>&1; then
-    return 0
-  fi
+  for package in "$@"; do
+    if ! brew list --formula "$package" >/dev/null 2>&1; then
+      missing+=("$package")
+    fi
+  done
 
-  brew install "$package" || die_with_fix \
-    "Failed to install prerequisite package '$package' with Homebrew." \
-    "dotforge requires this tool before it can continue." \
-    "Install '$package' manually with Homebrew and rerun dotforge."
+  [[ ${#missing[@]} -eq 0 ]] && return 0
+
+  brew install "${missing[@]}" || die_with_fix \
+    "Failed to install one or more prerequisite packages with Homebrew." \
+    "dotforge requires these tools before it can continue." \
+    "Install the missing prerequisites manually with Homebrew and rerun dotforge."
 }
 
 ensure_arch_packages_installed() {
@@ -205,6 +253,25 @@ ensure_yay() {
       makepkg -si --noconfirm
   ) || die_with_fix \
     "Failed to bootstrap yay." \
-    "dotforge could not build or install yay from the AUR." \
-    "Ensure base-devel and git are installed and the AUR build succeeds, then rerun dotforge."
+      "dotforge could not build or install yay from the AUR." \
+      "Ensure base-devel and git are installed and the AUR build succeeds, then rerun dotforge."
+}
+
+ensure_login_shell_is_zsh() {
+  local zsh_path
+  zsh_path=$(command -v zsh 2>/dev/null || true)
+  [[ -n "$zsh_path" ]] || return 0
+
+  detect_shell_context
+  if [[ "$DOTFORGE_LOGIN_SHELL" == "$zsh_path" ]]; then
+    return 0
+  fi
+
+  if sudo chsh -s "$zsh_path" "$USER" >/dev/null 2>&1; then
+    info "Updated login shell to '$zsh_path'."
+    DOTFORGE_LOGIN_SHELL=$zsh_path
+    return 0
+  fi
+
+  warn "Could not switch the login shell to '$zsh_path'. Run 'sudo chsh -s $zsh_path $USER' manually if you want zsh by default."
 }

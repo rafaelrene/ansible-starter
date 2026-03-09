@@ -4,6 +4,7 @@ emacs	repo	emacs	1
 ente	aur	ente-desktop-bin	1
 ente-auth	aur	ente-auth-bin	1
 fd	repo	fd	1
+fzf	repo	fzf	1
 font-hack-nerd-font	repo	ttf-hack-nerd	1
 font-jetbrains-mono	repo	ttf-jetbrains-mono	1
 font-jetbrains-mono-nerd-font	repo	ttf-jetbrains-mono-nerd	1
@@ -21,6 +22,7 @@ onlyoffice	aur	onlyoffice-bin	1
 opencode	aur	opencode-bin	1
 openssh	repo	openssh	1
 ripgrep	repo	ripgrep	1
+starship	repo	starship	1
 standard-notes	aur	standardnotes-bin	1
 tailscale	repo	tailscale	1
 tldr	repo	tldr	1

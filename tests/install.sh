@@ -165,4 +165,28 @@ fi
 assert_contains "Unknown argument: --bogus" "$unknown_output" "unknown arguments should return a clear error"
 assert_contains "Usage:" "$unknown_output" "unknown arguments should print usage"
 
+arch_bootstrap_log=$(
+  test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-install-arch.XXXXXX")
+  install_lib="$test_root/install-lib.sh"
+  mkdir -p "$test_root/bin"
+  trap '/bin/rm -rf "$test_root"' RETURN
+  /usr/bin/sed '$d' "$ROOT/install.sh" >"$install_lib"
+  (
+    set -euo pipefail
+    PATH="$test_root/bin"
+    source "$install_lib"
+    sudo() {
+      printf "%s\n" "$*"
+      if [[ "$1" == "-n" ]]; then
+        return 1
+      fi
+      return 0
+    }
+    frontload_arch_sudo_if_needed arch
+    ensure_git arch
+  )
+)
+assert_contains "-v" "$arch_bootstrap_log" "install.sh should front-load sudo for Arch bootstrap when git is missing"
+assert_contains "pacman -Sy --needed --noconfirm git" "$arch_bootstrap_log" "install.sh should still install git with pacman after upfront sudo"
+
 printf 'install tests passed\n'

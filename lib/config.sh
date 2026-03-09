@@ -42,12 +42,67 @@ normalize_package_csv() {
   join_by_comma "${normalized[@]+"${normalized[@]}"}"
 }
 
-ensure_config_ready() {
+csv_contains_token() {
+  local csv=$1
+  local needle=$2
+  local item
+  local token
+  local old_ifs=$IFS
+
+  IFS=','
+  for item in $csv; do
+    token=$(trim "$item")
+    if [[ "$token" == "$needle" ]]; then
+      IFS=$old_ifs
+      return 0
+    fi
+  done
+  IFS=$old_ifs
+  return 1
+}
+
+append_missing_package_tokens() {
+  local csv=$1
+  shift
+
+  local normalized
+  normalized=$(normalize_package_csv "$csv")
+  local token
+  for token in "$@"; do
+    csv_contains_token "$normalized" "$token" && continue
+    if [[ -n "$normalized" ]]; then
+      normalized="$normalized,$token"
+    else
+      normalized=$token
+    fi
+  done
+
+  normalize_package_csv "$normalized"
+}
+
+auto_migrate_package_tokens() {
   load_config
 
+  if [[ -z "${DOTFORGE_PACKAGES:-}" ]]; then
+    return 0
+  fi
+
+  local normalized migrated
+  normalized=$(normalize_package_csv "$DOTFORGE_PACKAGES")
+  migrated=$(append_missing_package_tokens "$normalized" fzf starship)
+  if [[ "$migrated" != "$normalized" ]]; then
+    write_config "$migrated"
+    DOTFORGE_PACKAGES=$migrated
+  else
+    DOTFORGE_PACKAGES=$normalized
+  fi
+}
+
+collect_config_inputs_if_needed() {
+  auto_migrate_package_tokens
+
   if [[ -n "${DOTFORGE_PACKAGES:-}" ]]; then
-    DOTFORGE_PACKAGES=$(normalize_package_csv "$DOTFORGE_PACKAGES")
-    write_config "$DOTFORGE_PACKAGES"
+    write_config "$(normalize_package_csv "$DOTFORGE_PACKAGES")"
     return 0
   fi
 
@@ -61,6 +116,21 @@ ensure_config_ready() {
   DOTFORGE_PACKAGES=$(interactive_package_selection)
   DOTFORGE_PACKAGES=$(normalize_package_csv "$DOTFORGE_PACKAGES")
   write_config "$DOTFORGE_PACKAGES"
+}
+
+ensure_config_ready() {
+  auto_migrate_package_tokens
+
+  if [[ -n "${DOTFORGE_PACKAGES:-}" ]]; then
+    DOTFORGE_PACKAGES=$(normalize_package_csv "$DOTFORGE_PACKAGES")
+    write_config "$DOTFORGE_PACKAGES"
+    return 0
+  fi
+
+  die_with_fix \
+    "The dotforge package list is not configured." \
+    "dotforge expected preflight to collect the package configuration before continuing." \
+    "Run dotforge in an interactive terminal or set DOTFORGE_PACKAGES before rerunning."
 }
 
 interactive_package_selection() {
