@@ -78,11 +78,10 @@ dotforge_apply() {
   dotforge_preflight_collect apply
   ensure_config_ready
 
-  local secrets_dir
-  secrets_dir=$(prepare_runtime_secrets_dir)
+  prepare_runtime_secrets_dir
 
   reconcile_packages
-  deploy_managed_assets "$secrets_dir"
+  deploy_managed_assets "$DOTFORGE_RUNTIME_SECRETS_DIR"
   run_post_install_steps
   doctor_run
 }

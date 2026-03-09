@@ -20,8 +20,17 @@ arguments to `bash`:
 
 ```bash
 url=https://raw.githubusercontent.com/rafaelrene/ansible-starter/refs/heads/t3code/migrate-ansible-to-bash-dotforge/install.sh
-curl -fsSL "$url" | bash -s -- --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge
+curl -fsSL "$url" | bash -s -- --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge --cleanup-existing
 ```
+
+Bootstrap flags:
+
+- `--repo <owner/repo>` selects a non-default GitHub repository.
+- `--branch <branch>` selects a non-default branch.
+- `--install-home <path>` changes the local checkout path.
+- `--cleanup-existing` removes a blocking existing install target before
+  re-cloning. This is opt-in and applies only to local path conflicts such as a
+  non-git directory, dirty checkout, file, or symlink at the install path.
 
 Bootstrap environment variables:
 
@@ -52,6 +61,8 @@ dotforge secrets pack <path>
   secrets, PATH wiring, and post-install state such as Volta-managed Node.
 - `dotforge pkg add` and `dotforge pkg rm` update
   `~/.config/dotforge/config`, reconcile packages immediately, then run doctor.
+- During reconcile, dotforge detects packages that are already installed and
+  skips reinstalling them while still treating them as managed packages.
 - Mutating commands collect required interactive input up front so package
   selection, sudo authentication, and the age passphrase are not re-requested
   later in the same run.

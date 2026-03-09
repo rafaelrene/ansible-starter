@@ -44,6 +44,10 @@ age_run() {
 validate_age_bundle_passphrase() {
   ensure_age_passphrase_ready
 
+  if [[ "$DOTFORGE_AGE_PASSPHRASE_VALIDATED" == "1" ]]; then
+    return 0
+  fi
+
   local temp_file
   temp_file=$(mktemp "${TMPDIR:-/tmp}/dotforge-age-check.XXXXXX")
   register_cleanup "rm -f '$temp_file'"
@@ -51,6 +55,7 @@ validate_age_bundle_passphrase() {
     "Failed to decrypt '$DOTFORGE_SECRETS_BUNDLE'." \
     "The age passphrase is wrong or the encrypted bundle is corrupted." \
     "Retry with the correct passphrase. If the bundle is corrupted, restore it from git history."
+  DOTFORGE_AGE_PASSPHRASE_VALIDATED=1
 }
 
 prepare_runtime_secrets_dir() {
@@ -58,6 +63,10 @@ prepare_runtime_secrets_dir() {
     "Missing encrypted secrets bundle." \
     "dotforge expected '$DOTFORGE_SECRETS_BUNDLE' to exist before applying SSH secrets." \
     "Create the bundle with 'dotforge secrets pack <path>' or restore it from git."
+
+  if [[ -n "$DOTFORGE_RUNTIME_SECRETS_DIR" ]] && [[ -d "$DOTFORGE_RUNTIME_SECRETS_DIR" ]]; then
+    return 0
+  fi
 
   ensure_age_passphrase_ready
   validate_age_bundle_passphrase
@@ -82,7 +91,7 @@ prepare_runtime_secrets_dir() {
     "dotforge only knows how to apply scoped secrets under ssh/ at the moment." \
     "Repack the bundle using 'dotforge secrets pack <path>' with an ssh/ directory."
 
-  printf '%s\n' "$temp_dir"
+  DOTFORGE_RUNTIME_SECRETS_DIR=$temp_dir
 }
 
 secrets_unpack() {
@@ -150,8 +159,7 @@ secrets_pack() {
     fi
   fi
 
-  local secrets_dir
-  secrets_dir=$(prepare_runtime_secrets_dir)
-  deploy_ssh_assets "$secrets_dir"
+  prepare_runtime_secrets_dir
+  deploy_ssh_assets "$DOTFORGE_RUNTIME_SECRETS_DIR"
   info "Secrets bundle updated. Commit and push '$DOTFORGE_SECRETS_BUNDLE' when you are ready."
 }

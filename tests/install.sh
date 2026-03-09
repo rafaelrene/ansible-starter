@@ -30,6 +30,17 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local needle=$1
+  local haystack=$2
+  local message=$3
+
+  if [[ "$haystack" == *"$needle"* ]]; then
+    printf 'FAIL: %s\nunexpected: %s\noutput: %s\n' "$message" "$needle" "$haystack" >&2
+    exit 1
+  fi
+}
+
 make_fake_bin() {
   local bin_dir=$1
   local git_log=$2
@@ -70,6 +81,9 @@ INNER
 fi
 
 if [[ "\${1:-}" == "-C" ]] && [[ "\${3:-}" == "status" ]] && [[ "\${4:-}" == "--porcelain" ]]; then
+  if [[ "\${DOTFORGE_TEST_GIT_STATUS_DIRTY:-0}" == "1" ]]; then
+    printf ' M dirty-file\n'
+  fi
   exit 0
 fi
 
@@ -109,6 +123,7 @@ run_install() {
     export DOTFORGE_GIT_REPOSITORY="${DOTFORGE_GIT_REPOSITORY-}"
     export DOTFORGE_GIT_BRANCH="${DOTFORGE_GIT_BRANCH-}"
     export DOTFORGE_INSTALL_HOME="${DOTFORGE_INSTALL_HOME-}"
+    export DOTFORGE_TEST_GIT_STATUS_DIRTY="${DOTFORGE_TEST_GIT_STATUS_DIRTY-0}"
     "$ROOT/install.sh" "$@"
   )
 
@@ -117,8 +132,46 @@ run_install() {
   fi
 }
 
+run_install_expect_fail() {
+  local test_name=$1
+  shift
+
+  local test_root="$TMPDIR_ROOT/$test_name"
+  local home_dir="$test_root/home"
+  local bin_dir="$test_root/bin"
+  local git_log="$test_root/git.log"
+
+  mkdir -p "$home_dir" "$test_root"
+  : >"$git_log"
+  make_fake_bin "$bin_dir" "$git_log"
+
+  set +e
+  local output
+  output=$(
+    export HOME="$home_dir"
+    export PATH="$bin_dir:$PATH"
+    export DOTFORGE_GIT_REPOSITORY="${DOTFORGE_GIT_REPOSITORY-}"
+    export DOTFORGE_GIT_BRANCH="${DOTFORGE_GIT_BRANCH-}"
+    export DOTFORGE_INSTALL_HOME="${DOTFORGE_INSTALL_HOME-}"
+    export DOTFORGE_TEST_GIT_STATUS_DIRTY="${DOTFORGE_TEST_GIT_STATUS_DIRTY-0}"
+    "$ROOT/install.sh" "$@" 2>&1
+  )
+  local status=$?
+  set -e
+
+  if [[ $status -eq 0 ]]; then
+    printf 'FAIL: expected install.sh to fail for %s\n' "$test_name" >&2
+    exit 1
+  fi
+
+  printf '%s' "$output"
+}
+
 default_clone_log=$(run_install default_clone)
 assert_contains "clone --branch master https://github.com/rafaelrene/dotforge.git" "$default_clone_log" "default clone should use built-in repo and branch"
+
+cleanup_direct_log=$(run_install cleanup_direct --cleanup-existing)
+assert_contains "clone --branch master https://github.com/rafaelrene/dotforge.git" "$cleanup_direct_log" "cleanup flag should be accepted in direct execution"
 
 repo_branch_log=$(run_install repo_branch_override --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge)
 assert_contains "clone --branch t3code/migrate-ansible-to-bash-dotforge https://github.com/rafaelrene/ansible-starter.git" "$repo_branch_log" "cli repo and branch overrides should reach git clone"
@@ -148,7 +201,7 @@ make_fake_bin "$piped_root/bin" "$piped_log"
 cat "$ROOT/install.sh" | (
   export HOME="$piped_root/home"
   export PATH="$piped_root/bin:$PATH"
-  bash -s -- --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge
+  bash -s -- --repo rafaelrene/ansible-starter --branch t3code/migrate-ansible-to-bash-dotforge --cleanup-existing
 )
 
 piped_clone_log=$(cat "$piped_log")
@@ -164,6 +217,73 @@ if [[ $unknown_status -eq 0 ]]; then
 fi
 assert_contains "Unknown argument: --bogus" "$unknown_output" "unknown arguments should return a clear error"
 assert_contains "Usage:" "$unknown_output" "unknown arguments should print usage"
+assert_contains "--cleanup-existing" "$unknown_output" "usage output should mention the cleanup flag"
+
+non_git_home="$TMPDIR_ROOT/non-git-home"
+mkdir -p "$non_git_home"
+non_git_fail_output=$(
+  DOTFORGE_INSTALL_HOME=$non_git_home run_install_expect_fail non_git_existing
+)
+assert_contains "already exists but is not a git checkout" "$non_git_fail_output" "existing non-git directory should still fail without cleanup"
+
+non_git_cleanup_home="$TMPDIR_ROOT/non-git-cleanup-home"
+mkdir -p "$non_git_cleanup_home"
+printf 'placeholder\n' >"$non_git_cleanup_home/marker"
+non_git_cleanup_log=$(
+  DOTFORGE_INSTALL_HOME=$non_git_cleanup_home run_install non_git_cleanup --cleanup-existing
+)
+assert_contains "clone --branch master https://github.com/rafaelrene/dotforge.git $non_git_cleanup_home" "$non_git_cleanup_log" "cleanup flag should remove a blocking non-git directory and reclone"
+if [[ -e "$non_git_cleanup_home/marker" ]]; then
+  printf 'FAIL: cleanup-existing should remove contents of a blocking non-git directory\n' >&2
+  exit 1
+fi
+
+dirty_home="$TMPDIR_ROOT/dirty-home"
+mkdir -p "$dirty_home/.git"
+dirty_fail_output=$(
+  DOTFORGE_INSTALL_HOME=$dirty_home DOTFORGE_TEST_GIT_STATUS_DIRTY=1 run_install_expect_fail dirty_existing
+)
+assert_contains "existing dotforge checkout is dirty" "$dirty_fail_output" "dirty checkout should still fail without cleanup"
+
+dirty_cleanup_home="$TMPDIR_ROOT/dirty-cleanup-home"
+mkdir -p "$dirty_cleanup_home/.git"
+printf 'dirty\n' >"$dirty_cleanup_home/dirty-file"
+dirty_cleanup_log=$(
+  DOTFORGE_INSTALL_HOME=$dirty_cleanup_home DOTFORGE_TEST_GIT_STATUS_DIRTY=1 run_install dirty_cleanup --cleanup-existing
+)
+assert_contains "clone --branch master https://github.com/rafaelrene/dotforge.git $dirty_cleanup_home" "$dirty_cleanup_log" "cleanup flag should remove a dirty checkout and reclone"
+assert_not_contains "-C $dirty_cleanup_home fetch" "$dirty_cleanup_log" "dirty cleanup path should not try to update before recloning"
+if [[ -e "$dirty_cleanup_home/dirty-file" ]]; then
+  printf 'FAIL: cleanup-existing should remove contents of a dirty checkout before recloning\n' >&2
+  exit 1
+fi
+
+clean_update_home="$TMPDIR_ROOT/clean-update-home"
+mkdir -p "$clean_update_home/.git" "$clean_update_home/bin"
+cat >"$clean_update_home/bin/dotforge" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$clean_update_home/bin/dotforge"
+clean_update_log=$(
+  DOTFORGE_INSTALL_HOME=$clean_update_home run_install clean_update --cleanup-existing
+)
+assert_contains "-C $clean_update_home fetch origin master" "$clean_update_log" "cleanup flag should still update a clean checkout in place"
+assert_not_contains "clone --branch master https://github.com/rafaelrene/dotforge.git $clean_update_home" "$clean_update_log" "cleanup flag should not reclone a clean checkout"
+
+file_home="$TMPDIR_ROOT/file-home"
+printf 'file\n' >"$file_home"
+file_cleanup_log=$(
+  DOTFORGE_INSTALL_HOME=$file_home run_install file_cleanup --cleanup-existing
+)
+assert_contains "clone --branch master https://github.com/rafaelrene/dotforge.git $file_home" "$file_cleanup_log" "cleanup flag should remove a blocking file and reclone"
+
+symlink_home="$TMPDIR_ROOT/symlink-home"
+ln -s "$TMPDIR_ROOT/missing-target" "$symlink_home"
+symlink_cleanup_log=$(
+  DOTFORGE_INSTALL_HOME=$symlink_home run_install symlink_cleanup --cleanup-existing
+)
+assert_contains "clone --branch master https://github.com/rafaelrene/dotforge.git $symlink_home" "$symlink_cleanup_log" "cleanup flag should remove a blocking symlink and reclone"
 
 arch_bootstrap_log=$(
   test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-install-arch.XXXXXX")

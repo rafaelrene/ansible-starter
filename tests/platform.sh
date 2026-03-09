@@ -301,6 +301,103 @@ empty_state_output=$(
 )
 assert_eq "ok" "$empty_state_output" "package uninstall should tolerate an empty managed state file"
 
+package_skip_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-package-skip.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_STATE_DIR="$test_root/state"
+    DOTFORGE_MANAGED_PACKAGES_FILE="$DOTFORGE_STATE_DIR/managed-packages.txt"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/state.sh"
+    . "'"$ROOT"'/lib/packages.sh"
+
+    resolve_csv_to_specs() {
+      cat <<EOF
+catalog|brew|formula||fd|fd
+catalog|brew|formula|oven-sh/bun|bun|bun
+catalog|brew|cask|homebrew/cask|ghostty|ghostty
+catalog|brew|cask|wez/wezterm|wezterm|wezterm
+raw|brew|raw||watch|brew:watch
+raw|brew|raw||jq|brew:jq
+catalog|yay|pkg||fzf|fzf
+catalog|yay|pkg||ripgrep|ripgrep
+EOF
+    }
+    config_package_tokens() {
+      printf "desired\n"
+    }
+    uninstall_removed_packages() { :; }
+    : >"$test_root/brew.log"
+    : >"$test_root/yay.log"
+    : >"$test_root/info.log"
+    info() {
+      printf "%s\n" "$*" >>"$test_root/info.log"
+    }
+    brew() {
+      if [[ "${1:-}" == "list" ]] && [[ "${2:-}" == "--formula" ]] && [[ "${3:-}" == "fd" ]]; then
+        return 0
+      fi
+      if [[ "${1:-}" == "list" ]] && [[ "${2:-}" == "--cask" ]] && [[ "${3:-}" == "ghostty" ]]; then
+        return 0
+      fi
+      if [[ "${1:-}" == "list" ]] && [[ "${2:-}" == "watch" ]]; then
+        return 0
+      fi
+      if [[ "${1:-}" == "tap" ]]; then
+        printf "%s\n" "$*" >>"$test_root/brew.log"
+        return 0
+      fi
+      if [[ "${1:-}" == "install" ]]; then
+        printf "%s\n" "$*" >>"$test_root/brew.log"
+        return 0
+      fi
+      return 1
+    }
+    yay() {
+      if [[ "${1:-}" == "-Q" ]] && [[ "${2:-}" == "fzf" ]]; then
+        return 0
+      fi
+      if [[ "${1:-}" == "-S" ]]; then
+        printf "%s\n" "$*" >>"$test_root/yay.log"
+        return 0
+      fi
+      return 1
+    }
+
+    install_desired_packages desired
+    reconcile_packages
+
+    printf "BREW\n"
+    cat "$test_root/brew.log"
+    printf "YAY\n"
+    cat "$test_root/yay.log"
+    printf "INFO\n"
+    cat "$test_root/info.log"
+    printf "STATE\n"
+    cat "$DOTFORGE_MANAGED_PACKAGES_FILE"
+  '
+)
+assert_contains $'tap oven-sh/bun\ntap wez/wezterm' "$package_skip_output" "install_desired_packages should tap only missing tapped packages"
+assert_not_contains "tap homebrew/cask" "$package_skip_output" "install_desired_packages should not tap repositories for already installed casks"
+assert_contains "install --formula bun" "$package_skip_output" "install_desired_packages should install only missing Homebrew formulae"
+assert_not_contains "install --formula fd" "$package_skip_output" "install_desired_packages should skip already installed Homebrew formulae"
+assert_contains "install --cask wezterm" "$package_skip_output" "install_desired_packages should install only missing Homebrew casks"
+assert_not_contains "install --cask ghostty" "$package_skip_output" "install_desired_packages should skip already installed Homebrew casks"
+assert_contains "install jq" "$package_skip_output" "install_desired_packages should install only missing raw Homebrew packages"
+assert_not_contains "install watch" "$package_skip_output" "install_desired_packages should skip already installed raw Homebrew packages"
+assert_contains "-S --needed --noconfirm ripgrep" "$package_skip_output" "install_desired_packages should install only missing Arch packages"
+assert_not_contains "-S --needed --noconfirm fzf" "$package_skip_output" "install_desired_packages should skip already installed Arch packages"
+assert_contains "Skipping already installed Homebrew formula: fd" "$package_skip_output" "install_desired_packages should summarize skipped Homebrew formulae"
+assert_contains "Skipping already installed Homebrew cask: ghostty" "$package_skip_output" "install_desired_packages should summarize skipped Homebrew casks"
+assert_contains "Skipping already installed Homebrew package: watch" "$package_skip_output" "install_desired_packages should summarize skipped raw Homebrew packages"
+assert_contains "Skipping already installed Arch package: fzf" "$package_skip_output" "install_desired_packages should summarize skipped Arch packages"
+assert_contains "brew|formula||fd" "$package_skip_output" "reconcile_packages should still record already installed formulae as managed"
+assert_contains "brew|cask|homebrew/cask|ghostty" "$package_skip_output" "reconcile_packages should still record already installed casks as managed"
+assert_contains "brew|raw||watch" "$package_skip_output" "reconcile_packages should still record already installed raw brew packages as managed"
+assert_contains "yay|pkg||fzf" "$package_skip_output" "reconcile_packages should still record already installed Arch packages as managed"
+
 passphrase_output=$(
   printf "stdin-should-not-be-used\n" | bash -lc '
     set -euo pipefail
@@ -360,34 +457,227 @@ preflight_output=$(
 )
 assert_eq "config sudo keepalive bootstrap passphrase shell validate" "$preflight_output" "preflight should front-load config, sudo, bootstrap, passphrase, shell detection, and validation"
 
-secrets_pack_prompt_output=$(
+prepare_runtime_output=$(
   bash -lc '
     set -euo pipefail
-    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-secrets-pack.XXXXXX")
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-runtime-secrets.XXXXXX")
     trap "rm -rf \"$test_root\"" EXIT INT TERM
     DOTFORGE_ROOT="'"$ROOT"'"
     DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
     mkdir -p "$test_root/source/ssh"
-    : >"$test_root/source/ssh/key"
-    : >"$test_root/prompt.log"
+    printf "secret\n" >"$test_root/source/ssh/key"
+    tar -cf "$test_root/archive.tar" -C "$test_root/source" ssh
     . "'"$ROOT"'/lib/common.sh"
     . "'"$ROOT"'/lib/secrets.sh"
+    : >"$test_root/age.log"
+    age_run() {
+      printf "%s\n" "$*" >>"$test_root/age.log"
+      local mode=$1
+      shift
+      if [[ "$mode" == "decrypt" ]]; then
+        local output=""
+        while [[ $# -gt 0 ]]; do
+          if [[ "$1" == "-o" ]]; then
+            output=$2
+            shift 2
+            continue
+          fi
+          shift
+        done
+        cp "$test_root/archive.tar" "$output"
+      fi
+    }
+    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
+    DOTFORGE_AGE_PASSPHRASE=expected-passphrase
+    prepare_runtime_secrets_dir
+    first_dir=$DOTFORGE_RUNTIME_SECRETS_DIR
+    prepare_runtime_secrets_dir
+    second_dir=$DOTFORGE_RUNTIME_SECRETS_DIR
+    cleanup_lines=$(printf "%s\n" "$DOTFORGE_CLEANUP_COMMANDS" | awk "NF { count++ } END { print count + 0 }")
+    age_calls=$(wc -l <"$test_root/age.log" | awk "{print \$1}")
+    if [[ "$first_dir" == "$second_dir" ]]; then
+      printf "same %s %s\n" "$age_calls" "$cleanup_lines"
+    else
+      printf "different %s %s\n" "$age_calls" "$cleanup_lines"
+    fi
+  '
+)
+assert_eq "same 2 2" "$prepare_runtime_output" "prepare_runtime_secrets_dir should memoize the runtime dir and keep cleanup registrations in the parent shell"
+
+dotforge_apply_prompt_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-apply-prompt.XXXXXX")
+    dotforge_lib=$(mktemp "'"$ROOT"'/bin/dotforge-lib.XXXXXX")
+    trap "rm -rf \"$test_root\" \"$dotforge_lib\"" EXIT INT TERM
+    /usr/bin/sed "\$d" "'"$ROOT"'/bin/dotforge" >"$dotforge_lib"
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_STATE_DIR="$test_root/state"
+    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
+    mkdir -p "$DOTFORGE_STATE_DIR"
+    mkdir -p "$test_root/source/ssh"
+    printf "secret\n" >"$test_root/source/ssh/bitbucket_work"
+    printf "secret\n" >"$test_root/source/ssh/hetzner"
+    printf "secret\n" >"$test_root/source/ssh/personal"
+    mkdir -p "$test_root/source/opencode"
+    printf "token\n" >"$test_root/source/opencode/gsmcp_token"
+    tar -cf "$test_root/archive.tar" -C "$test_root/source" ssh opencode
+    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
+    : >"$test_root/prompt.log"
+    . "$dotforge_lib"
     prompt_for_age_passphrase() {
       printf "prompt\n" >>"$test_root/prompt.log"
       printf "expected-passphrase"
     }
-    age_run() { return 0; }
-    deploy_ssh_assets() { :; }
-    info() { :; }
-    prepare_runtime_secrets_dir() {
-      ensure_age_passphrase_ready
-      printf "%s\n" "$test_root/source"
+    age_run() {
+      local mode=$1
+      shift
+      if [[ "$mode" == "decrypt" ]]; then
+        local output=""
+        while [[ $# -gt 0 ]]; do
+          if [[ "$1" == "-o" ]]; then
+            output=$2
+            shift 2
+            continue
+          fi
+          shift
+        done
+        cp "$test_root/archive.tar" "$output"
+      fi
     }
-    secrets_pack "$test_root/source"
+    require_supported_platform() { DOTFORGE_PLATFORM=macos; }
+    restore_interactive_stdin() { :; }
+    collect_config_inputs_if_needed() { :; }
+    ensure_sudo_session() { :; }
+    start_sudo_keepalive() { :; }
+    bootstrap_platform_prerequisites() { :; }
+    detect_shell_context() {
+      DOTFORGE_CURRENT_SHELL=/bin/zsh
+      DOTFORGE_LOGIN_SHELL=/bin/zsh
+    }
+    ensure_config_ready() { :; }
+    reconcile_packages() { :; }
+    deploy_managed_assets() { :; }
+    run_post_install_steps() { :; }
+    doctor_run() { :; }
+    info() { :; }
+    dotforge_apply
     wc -l <"$test_root/prompt.log" | awk "{print \$1}"
   '
 )
-assert_eq "1" "$secrets_pack_prompt_output" "secrets_pack should only prompt for the age passphrase once per run"
+assert_eq "1" "$dotforge_apply_prompt_output" "dotforge_apply should prompt for the age passphrase only once per run"
+
+dotforge_unpack_prompt_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-unpack-prompt.XXXXXX")
+    dotforge_lib=$(mktemp "'"$ROOT"'/bin/dotforge-lib.XXXXXX")
+    trap "rm -rf \"$test_root\" \"$dotforge_lib\"" EXIT INT TERM
+    /usr/bin/sed "\$d" "'"$ROOT"'/bin/dotforge" >"$dotforge_lib"
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_STATE_DIR="$test_root/state"
+    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
+    mkdir -p "$DOTFORGE_STATE_DIR"
+    mkdir -p "$test_root/source/ssh"
+    printf "secret\n" >"$test_root/source/ssh/key"
+    tar -cf "$test_root/archive.tar" -C "$test_root/source" ssh
+    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
+    : >"$test_root/prompt.log"
+    . "$dotforge_lib"
+    prompt_for_age_passphrase() {
+      printf "prompt\n" >>"$test_root/prompt.log"
+      printf "expected-passphrase"
+    }
+    age_run() {
+      local mode=$1
+      shift
+      if [[ "$mode" == "decrypt" ]]; then
+        local output=""
+        while [[ $# -gt 0 ]]; do
+          if [[ "$1" == "-o" ]]; then
+            output=$2
+            shift 2
+            continue
+          fi
+          shift
+        done
+        cp "$test_root/archive.tar" "$output"
+      fi
+    }
+    require_supported_platform() { DOTFORGE_PLATFORM=macos; }
+    restore_interactive_stdin() { :; }
+    collect_config_inputs_if_needed() { :; }
+    ensure_sudo_session() { :; }
+    start_sudo_keepalive() { :; }
+    bootstrap_platform_prerequisites() { :; }
+    ensure_config_ready() { :; }
+    info() { :; }
+    doctor_run() { :; }
+    secrets_command unpack
+    wc -l <"$test_root/prompt.log" | awk "{print \$1}"
+  '
+)
+assert_eq "1" "$dotforge_unpack_prompt_output" "dotforge secrets unpack should prompt for the age passphrase only once per run"
+
+dotforge_pack_prompt_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-pack-prompt.XXXXXX")
+    dotforge_lib=$(mktemp "'"$ROOT"'/bin/dotforge-lib.XXXXXX")
+    trap "rm -rf \"$test_root\" \"$dotforge_lib\"" EXIT INT TERM
+    /usr/bin/sed "\$d" "'"$ROOT"'/bin/dotforge" >"$dotforge_lib"
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_STATE_DIR="$test_root/state"
+    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
+    mkdir -p "$DOTFORGE_STATE_DIR"
+    mkdir -p "$test_root/source/ssh"
+    printf "secret\n" >"$test_root/source/ssh/key"
+    mkdir -p "$test_root/runtime/ssh"
+    printf "runtime-secret\n" >"$test_root/runtime/ssh/key"
+    tar -cf "$test_root/archive.tar" -C "$test_root/runtime" ssh
+    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
+    : >"$test_root/prompt.log"
+    . "$dotforge_lib"
+    prompt_for_age_passphrase() {
+      printf "prompt\n" >>"$test_root/prompt.log"
+      printf "expected-passphrase"
+    }
+    age_run() {
+      local mode=$1
+      shift
+      local output=""
+      while [[ $# -gt 0 ]]; do
+        if [[ "$1" == "-o" ]]; then
+          output=$2
+          shift 2
+          continue
+        fi
+        shift
+      done
+      if [[ "$mode" == "encrypt" ]]; then
+        printf "bundle\n" >"$output"
+        return 0
+      fi
+      if [[ "$mode" == "decrypt" ]]; then
+        cp "$test_root/archive.tar" "$output"
+        return 0
+      fi
+    }
+    require_supported_platform() { DOTFORGE_PLATFORM=macos; }
+    restore_interactive_stdin() { :; }
+    collect_config_inputs_if_needed() { :; }
+    ensure_sudo_session() { :; }
+    start_sudo_keepalive() { :; }
+    bootstrap_platform_prerequisites() { :; }
+    ensure_config_ready() { :; }
+    deploy_ssh_assets() { :; }
+    info() { :; }
+    doctor_run() { :; }
+    secrets_command pack "$test_root/source"
+    wc -l <"$test_root/prompt.log" | awk "{print \$1}"
+  '
+)
+assert_eq "1" "$dotforge_pack_prompt_output" "dotforge secrets pack should prompt for the age passphrase only once per run"
 
 sudo_output=$(
   bash -lc '

@@ -9,6 +9,7 @@ DOTFORGE_DEFAULT_INSTALL_HOME="$HOME/.local/share/dotforge"
 DOTFORGE_ARG_REPO=
 DOTFORGE_ARG_BRANCH=
 DOTFORGE_ARG_INSTALL_HOME=
+DOTFORGE_ARG_CLEANUP_EXISTING=0
 
 die() {
   local what=$1
@@ -26,7 +27,7 @@ usage() {
   cat <<'EOF'
 Usage:
   install.sh
-  install.sh --repo <owner/repo> --branch <branch> [--install-home <path>]
+  install.sh --repo <owner/repo> --branch <branch> [--install-home <path>] [--cleanup-existing]
 
 Direct execution with exported environment variables:
   export DOTFORGE_GIT_REPOSITORY=owner/repo
@@ -65,6 +66,10 @@ parse_args() {
         DOTFORGE_ARG_INSTALL_HOME=$2
         shift 2
         ;;
+      --cleanup-existing)
+        DOTFORGE_ARG_CLEANUP_EXISTING=1
+        shift
+        ;;
       --help|-h)
         usage
         exit 0
@@ -73,7 +78,7 @@ parse_args() {
         usage >&2
         die \
           "Unknown argument: $1" \
-          "install.sh only accepts --repo, --branch, --install-home, and --help." \
+          "install.sh only accepts --repo, --branch, --install-home, --cleanup-existing, and --help." \
           "Remove the unsupported argument or run 'install.sh --help' for usage."
         ;;
     esac
@@ -84,6 +89,7 @@ resolve_config() {
   DOTFORGE_GIT_REPOSITORY=${DOTFORGE_ARG_REPO:-${DOTFORGE_GIT_REPOSITORY:-$DOTFORGE_DEFAULT_GIT_REPOSITORY}}
   DOTFORGE_GIT_BRANCH=${DOTFORGE_ARG_BRANCH:-${DOTFORGE_GIT_BRANCH:-$DOTFORGE_DEFAULT_GIT_BRANCH}}
   DOTFORGE_INSTALL_HOME=${DOTFORGE_ARG_INSTALL_HOME:-${DOTFORGE_INSTALL_HOME:-$DOTFORGE_DEFAULT_INSTALL_HOME}}
+  DOTFORGE_CLEANUP_EXISTING=${DOTFORGE_ARG_CLEANUP_EXISTING:-0}
 }
 
 detect_platform() {
@@ -165,16 +171,61 @@ clone_url_from_slug() {
   printf 'https://github.com/%s.git\n' "$1"
 }
 
+info() {
+  printf 'INFO: %s\n' "$*"
+}
+
+path_exists_for_cleanup() {
+  local path=$1
+  [[ -e "$path" || -L "$path" ]]
+}
+
+best_effort_remove_install_home() {
+  local path=$1
+  local reason=$2
+
+  if ! path_exists_for_cleanup "$path"; then
+    return 0
+  fi
+
+  info "Removing '$path' before re-cloning because $reason."
+  rm -rf "$path" || die \
+    "Failed to remove the existing install path '$path'." \
+    "install.sh could not clean the blocking bootstrap target before cloning." \
+    "Remove '$path' manually or fix filesystem permissions, then rerun install.sh."
+}
+
+clone_checkout() {
+  local clone_url=$1
+
+  git clone --branch "$DOTFORGE_GIT_BRANCH" "$clone_url" "$DOTFORGE_INSTALL_HOME" || die \
+    "Failed to clone dotforge." \
+    "git could not clone the configured repository and branch into '$DOTFORGE_INSTALL_HOME'." \
+    "Verify DOTFORGE_GIT_REPOSITORY/DOTFORGE_GIT_BRANCH and rerun install.sh."
+}
+
 update_checkout() {
   local repo_dir=$1
   local branch=$2
 
-  [[ -d "$repo_dir/.git" ]] || die \
-    "The install directory '$repo_dir' already exists but is not a git checkout." \
-    "install.sh only knows how to update dotforge when the directory is a git repository." \
-    "Remove or rename '$repo_dir', then rerun install.sh."
+  if [[ ! -d "$repo_dir/.git" ]]; then
+    if [[ "$DOTFORGE_CLEANUP_EXISTING" == "1" ]]; then
+      best_effort_remove_install_home "$repo_dir" "it is not a git checkout"
+      return 10
+    fi
+
+    die \
+      "The install directory '$repo_dir' already exists but is not a git checkout." \
+      "install.sh only knows how to update dotforge when the directory is a git repository." \
+      "Remove or rename '$repo_dir', then rerun install.sh."
+  fi
 
   if [[ -n "$(git -C "$repo_dir" status --porcelain)" ]]; then
+    if [[ "$DOTFORGE_CLEANUP_EXISTING" == "1" ]]; then
+      best_effort_remove_install_home "$repo_dir" "the existing checkout has local changes"
+      return 10
+    fi
+
     die \
       "The existing dotforge checkout is dirty." \
       "install.sh refuses to overwrite local changes in '$repo_dir'." \
@@ -198,6 +249,7 @@ update_checkout() {
 main() {
   local platform
   local clone_url
+  local update_status=0
 
   parse_args "$@"
   resolve_config
@@ -214,13 +266,19 @@ main() {
   mkdir -p "$(dirname -- "$DOTFORGE_INSTALL_HOME")"
   clone_url=$(clone_url_from_slug "$DOTFORGE_GIT_REPOSITORY")
 
-  if [[ -d "$DOTFORGE_INSTALL_HOME" ]]; then
-    update_checkout "$DOTFORGE_INSTALL_HOME" "$DOTFORGE_GIT_BRANCH"
+  if path_exists_for_cleanup "$DOTFORGE_INSTALL_HOME"; then
+    if update_checkout "$DOTFORGE_INSTALL_HOME" "$DOTFORGE_GIT_BRANCH"; then
+      :
+    else
+      update_status=$?
+      if [[ $update_status -eq 10 ]]; then
+        clone_checkout "$clone_url"
+      else
+        exit "$update_status"
+      fi
+    fi
   else
-    git clone --branch "$DOTFORGE_GIT_BRANCH" "$clone_url" "$DOTFORGE_INSTALL_HOME" || die \
-      "Failed to clone dotforge." \
-      "git could not clone the configured repository and branch into '$DOTFORGE_INSTALL_HOME'." \
-      "Verify DOTFORGE_GIT_REPOSITORY/DOTFORGE_GIT_BRANCH and rerun install.sh."
+    clone_checkout "$clone_url"
   fi
 
   export PATH="$DOTFORGE_INSTALL_HOME/bin:$PATH"

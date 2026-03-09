@@ -39,6 +39,10 @@ install_desired_packages() {
   local brew_raw=()
   local brew_taps=()
   local yay_packages=()
+  local skipped_brew_formula=()
+  local skipped_brew_cask=()
+  local skipped_brew_raw=()
+  local skipped_yay_packages=()
   local spec source manager kind tap package token
 
   while IFS= read -r spec; do
@@ -48,23 +52,44 @@ $spec
 EOF
     case "$manager:$kind" in
       brew:formula)
-        [[ -n "$tap" ]] && brew_taps+=("$tap")
-        brew_formula+=("$package")
+        if brew_formula_installed "$package"; then
+          skipped_brew_formula+=("$package")
+        else
+          [[ -n "$tap" ]] && brew_taps+=("$tap")
+          brew_formula+=("$package")
+        fi
         ;;
       brew:cask)
-        [[ -n "$tap" ]] && brew_taps+=("$tap")
-        brew_cask+=("$package")
+        if brew_cask_installed "$package"; then
+          skipped_brew_cask+=("$package")
+        else
+          [[ -n "$tap" ]] && brew_taps+=("$tap")
+          brew_cask+=("$package")
+        fi
         ;;
       brew:raw)
-        brew_raw+=("$package")
+        if brew_raw_installed "$package"; then
+          skipped_brew_raw+=("$package")
+        else
+          brew_raw+=("$package")
+        fi
         ;;
       yay:*)
-        yay_packages+=("$package")
+        if yay_package_installed "$package"; then
+          skipped_yay_packages+=("$package")
+        else
+          yay_packages+=("$package")
+        fi
         ;;
     esac
   done <<EOF
 $(resolve_csv_to_specs "$csv")
 EOF
+
+  log_skipped_packages "Homebrew formula" "${skipped_brew_formula[@]+"${skipped_brew_formula[@]}"}"
+  log_skipped_packages "Homebrew cask" "${skipped_brew_cask[@]+"${skipped_brew_cask[@]}"}"
+  log_skipped_packages "Homebrew package" "${skipped_brew_raw[@]+"${skipped_brew_raw[@]}"}"
+  log_skipped_packages "Arch package" "${skipped_yay_packages[@]+"${skipped_yay_packages[@]}"}"
 
   if [[ ${#brew_taps[@]} -gt 0 ]]; then
     local unique_taps=()
@@ -101,6 +126,33 @@ EOF
     "Failed to install one or more Arch packages with yay." \
     "yay reported an error while installing the selected packages." \
     "Fix the yay error shown above and rerun dotforge."
+}
+
+brew_formula_installed() {
+  brew list --formula "$1" >/dev/null 2>&1
+}
+
+brew_cask_installed() {
+  brew list --cask "$1" >/dev/null 2>&1
+}
+
+brew_raw_installed() {
+  brew list "$1" >/dev/null 2>&1
+}
+
+yay_package_installed() {
+  yay -Q "$1" >/dev/null 2>&1
+}
+
+log_skipped_packages() {
+  local label=$1
+  shift
+
+  if [[ $# -eq 0 ]]; then
+    return 0
+  fi
+
+  info "Skipping already installed $label: $*"
 }
 
 uninstall_removed_packages() {
