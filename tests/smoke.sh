@@ -46,6 +46,9 @@ DOTFORGE_PLATFORM=macos
 normalized=$(normalize_package_csv 'fd, fd,brew:watch,fd')
 assert_eq 'fd,brew:watch' "$normalized" 'package normalization should dedupe and trim tokens'
 
+empty_normalized=$(normalize_package_csv '')
+assert_eq '' "$empty_normalized" 'package normalization should allow an empty package list'
+
 resolved=$(resolve_package_token 'go-task')
 assert_eq 'catalog|brew|formula|go-task/tap|go-task|go-task' "$resolved" 'catalog lookup should resolve macOS package metadata'
 

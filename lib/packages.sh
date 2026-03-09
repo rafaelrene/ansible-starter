@@ -29,7 +29,7 @@ reconcile_packages() {
   done <<EOF
 $(desired_state_lines_from_csv "$csv")
 EOF
-  write_state_lines "$DOTFORGE_MANAGED_PACKAGES_FILE" "${desired_lines[@]}"
+  write_state_lines "$DOTFORGE_MANAGED_PACKAGES_FILE" "${desired_lines[@]+"${desired_lines[@]}"}"
 }
 
 install_desired_packages() {
@@ -70,7 +70,7 @@ EOF
     local unique_taps=()
     local tap
     for tap in "${brew_taps[@]}"; do
-      if ! contains_line "$tap" "${unique_taps[@]}"; then
+      if ! contains_line "$tap" "${unique_taps[@]+"${unique_taps[@]}"}"; then
         unique_taps+=("$tap")
       fi
     done
@@ -124,11 +124,11 @@ EOF
 $(read_state_lines "$DOTFORGE_MANAGED_PACKAGES_FILE")
 EOF
 
-  for line in "${current_lines[@]}"; do
-    contains_line "$line" "${desired_lines[@]}" || removed+=("$line")
+  for line in "${current_lines[@]+"${current_lines[@]}"}"; do
+    contains_line "$line" "${desired_lines[@]+"${desired_lines[@]}"}" || removed+=("$line")
   done
 
-  uninstall_state_lines "${removed[@]}"
+  uninstall_state_lines "${removed[@]+"${removed[@]}"}"
 }
 
 uninstall_state_lines() {
@@ -219,6 +219,6 @@ pkg_rm() {
       "Check the configured package list and rerun the command with a selected package."
   fi
 
-  save_package_tokens "$(join_by_comma "${result[@]}")"
+  save_package_tokens "$(join_by_comma "${result[@]+"${result[@]}"}")"
   reconcile_packages
 }

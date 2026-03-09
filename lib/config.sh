@@ -39,7 +39,7 @@ normalize_package_csv() {
   done
   IFS=$old_ifs
 
-  join_by_comma "${normalized[@]}"
+  join_by_comma "${normalized[@]+"${normalized[@]}"}"
 }
 
 ensure_config_ready() {
@@ -91,7 +91,11 @@ EOF
         break
         ;;
       all)
-        DOTFORGE_PACKAGE_SELECTED=("${DOTFORGE_PACKAGE_DEFAULTS[@]}")
+        if [[ ${#DOTFORGE_PACKAGE_DEFAULTS[@]} -gt 0 ]]; then
+          DOTFORGE_PACKAGE_SELECTED=("${DOTFORGE_PACKAGE_DEFAULTS[@]}")
+        else
+          DOTFORGE_PACKAGE_SELECTED=()
+        fi
         ;;
       none)
         DOTFORGE_PACKAGE_SELECTED=()
@@ -111,12 +115,12 @@ EOF
 
   if [[ -n "$line" ]]; then
     if [[ ${#DOTFORGE_PACKAGE_SELECTED[@]} -gt 0 ]]; then
-      printf '%s,%s\n' "$(join_by_comma "${DOTFORGE_PACKAGE_SELECTED[@]}")" "$line"
+      printf '%s,%s\n' "$(join_by_comma "${DOTFORGE_PACKAGE_SELECTED[@]+"${DOTFORGE_PACKAGE_SELECTED[@]}"}")" "$line"
     else
       printf '%s\n' "$line"
     fi
   else
-    join_by_comma "${DOTFORGE_PACKAGE_SELECTED[@]}"
+    join_by_comma "${DOTFORGE_PACKAGE_SELECTED[@]+"${DOTFORGE_PACKAGE_SELECTED[@]}"}"
     printf '\n'
   fi
 }
@@ -126,8 +130,8 @@ print_package_selection() {
   local item
 
   tty_println
-  for item in "${DOTFORGE_PACKAGE_DEFAULTS[@]}"; do
-    if contains_line "$item" "${DOTFORGE_PACKAGE_SELECTED[@]}"; then
+  for item in "${DOTFORGE_PACKAGE_DEFAULTS[@]+"${DOTFORGE_PACKAGE_DEFAULTS[@]}"}"; do
+    if contains_line "$item" "${DOTFORGE_PACKAGE_SELECTED[@]+"${DOTFORGE_PACKAGE_SELECTED[@]}"}"; then
       tty_println " [x] $index. $item"
     else
       tty_println " [ ] $index. $item"
@@ -149,7 +153,7 @@ toggle_selected_packages() {
     token=${DOTFORGE_PACKAGE_DEFAULTS[$((number - 1))]:-}
     [[ -n "$token" ]] || continue
 
-    if contains_line "$token" "${DOTFORGE_PACKAGE_SELECTED[@]}"; then
+    if contains_line "$token" "${DOTFORGE_PACKAGE_SELECTED[@]+"${DOTFORGE_PACKAGE_SELECTED[@]}"}"; then
       DOTFORGE_PACKAGE_SELECTED=($(printf '%s\n' "${DOTFORGE_PACKAGE_SELECTED[@]}" | awk -v drop="$token" '$0 != drop'))
     else
       DOTFORGE_PACKAGE_SELECTED+=("$token")

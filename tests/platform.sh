@@ -251,6 +251,56 @@ selector_toggle_output=$(
 )
 assert_eq "fd,brew:watch" "$selector_toggle_output" "package selection should still support toggle and extra packages"
 
+selector_none_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-selector-none.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    DOTFORGE_ROOT="'"$ROOT"'"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/config.sh"
+
+    catalog_default_ids() {
+      printf "fd\n"
+      printf "tmux\n"
+    }
+    tty_print() { :; }
+    tty_println() { :; }
+    printf "none\n\n" >"$test_root/responses"
+    tty_read_line() {
+      local response=""
+      IFS= read -r response <"$test_root/responses" || true
+      tail -n +2 "$test_root/responses" >"$test_root/responses.next"
+      mv "$test_root/responses.next" "$test_root/responses"
+      printf "%s" "$response"
+    }
+
+    interactive_package_selection
+  '
+)
+assert_eq "" "$selector_none_output" "package selection should allow choosing no packages"
+
+empty_state_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-empty-state.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_STATE_DIR="$test_root/state"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/state.sh"
+    . "'"$ROOT"'/lib/packages.sh"
+
+    DOTFORGE_MANAGED_PACKAGES_FILE="$DOTFORGE_STATE_DIR/managed-packages.txt"
+    resolve_csv_to_specs() { :; }
+    uninstall_state_lines() { :; }
+
+    uninstall_removed_packages ""
+    printf "ok\n"
+  '
+)
+assert_eq "ok" "$empty_state_output" "package uninstall should tolerate an empty managed state file"
+
 passphrase_output=$(
   printf "stdin-should-not-be-used\n" | bash -lc '
     set -euo pipefail
