@@ -23,9 +23,9 @@ doctor_run() {
   doctor_check_symlinks
   doctor_check_opencode
   doctor_check_ssh
+  doctor_check_local_secrets
   doctor_check_path_injection
   doctor_check_post_install
-  doctor_check_unpacked_dir
 
   if ((doctor_errors > 0)); then
     die_with_fix \
@@ -98,14 +98,15 @@ doctor_check_symlinks() {
 }
 
 doctor_check_opencode() {
-  doctor_expect_symlink "$HOME/.config/opencode/.opencode" "$DOTFORGE_ASSETS_DIR/config/opencode/.opencode"
-  doctor_expect_symlink "$HOME/.config/opencode/agent" "$DOTFORGE_ASSETS_DIR/config/opencode/agent"
-  doctor_expect_symlink "$HOME/.config/opencode/skills" "$DOTFORGE_ASSETS_DIR/config/opencode/skills"
-  doctor_expect_symlink "$HOME/.config/opencode/AGENTS.md" "$DOTFORGE_ASSETS_DIR/config/opencode/AGENTS.md"
-  doctor_expect_symlink "$HOME/.config/opencode/tui.json" "$DOTFORGE_ASSETS_DIR/config/opencode/tui.json"
+  local opencode_dir="$HOME/.config/opencode"
+  local opencode_config="$opencode_dir/opencode.jsonc"
+  local expected_ref="{file:$DOTFORGE_LOCAL_SECRETS_DIR/OPENCODE_GSMCP_TOKEN}"
 
-  if [[ ! -f "$HOME/.config/opencode/opencode.jsonc" ]]; then
-    doctor_error "The generated opencode config '$HOME/.config/opencode/opencode.jsonc' is missing."
+  doctor_expect_symlink "$opencode_dir" "$DOTFORGE_ASSETS_DIR/config/opencode"
+  [[ -f "$opencode_config" ]] || doctor_error "The opencode config '$opencode_config' is missing."
+  if [[ -f "$opencode_config" ]]; then
+    grep -F "$expected_ref" "$opencode_config" >/dev/null 2>&1 || doctor_error \
+      "The opencode config '$opencode_config' does not reference '$expected_ref'."
   fi
 }
 
@@ -141,7 +142,7 @@ doctor_check_ssh() {
       fi
 
       actual_hash=$(hash_file "$target_path")
-      [[ "$actual_hash" == "$expected_hash" ]] || doctor_error "Secret file '$target_path' does not match the last deployed bundle."
+      [[ "$actual_hash" == "$expected_hash" ]] || doctor_error "Secret file '$target_path' does not match the last deployed secrets store."
     done <"$DOTFORGE_SECRETS_HASHES_FILE"
   else
     doctor_error "The secrets state file '$DOTFORGE_SECRETS_HASHES_FILE' is missing."
@@ -162,6 +163,27 @@ doctor_check_ssh() {
   else
     doctor_warning "No reachable ssh-agent session was found while running doctor."
   fi
+}
+
+doctor_check_local_secrets() {
+  local target_dir="$DOTFORGE_LOCAL_SECRETS_DIR"
+  local target_path
+
+  [[ -d "$target_dir" ]] || doctor_error "The local secrets directory '$target_dir' is missing."
+  if [[ -d "$target_dir" ]] && [[ "$(stat_mode "$target_dir")" != "700" ]]; then
+    doctor_error "The local secrets directory '$target_dir' does not have mode 700."
+  fi
+
+  for target_path in \
+    "$target_dir/OPENCODE_GSMCP_TOKEN" \
+    "$target_dir/SSH_BITBUCKET_WORK" \
+    "$target_dir/SSH_HETZNER" \
+    "$target_dir/SSH_PERSONAL"; do
+    [[ -f "$target_path" ]] || doctor_error "Expected local secret file '$target_path' is missing."
+    if [[ -f "$target_path" ]] && [[ "$(stat_mode "$target_path")" != "600" ]]; then
+      doctor_error "Local secret file '$target_path' does not have mode 600."
+    fi
+  done
 }
 
 stat_mode() {
@@ -194,15 +216,5 @@ doctor_check_post_install() {
   if csv_contains_token "$csv" tmux; then
     [[ -d "$HOME/.config/tmux/plugins/catppuccin" ]] || doctor_error \
       "tmux is selected but the Catppuccin TPM plugin is missing from '$HOME/.config/tmux/plugins/catppuccin'."
-  fi
-}
-
-doctor_check_unpacked_dir() {
-  if [[ -f "$DOTFORGE_UNPACKED_DIR_FILE" ]]; then
-    local unpacked_dir
-    unpacked_dir=$(cat "$DOTFORGE_UNPACKED_DIR_FILE")
-    if [[ -d "$unpacked_dir" ]]; then
-      doctor_warning "A decrypted secrets directory is still present at '$unpacked_dir'. Repack or remove it when you are done."
-    fi
   fi
 }

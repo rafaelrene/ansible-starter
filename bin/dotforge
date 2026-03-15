@@ -38,35 +38,35 @@ main() {
   dotforge_init
 
   case "$command" in
-    apply)
-      shift || true
-      dotforge_apply
-      ;;
-    doctor)
-      shift
-      doctor_run
-      ;;
-    pkg)
-      shift
-      pkg_command "$@"
-      ;;
-    secrets)
-      shift
-      secrets_command "$@"
-      ;;
-    self)
-      shift
-      self_command "$@"
-      ;;
-    help|-h|--help)
-      dotforge_usage
-      ;;
-    *)
-      die_with_fix \
-        "Unknown command: $command" \
-        "The command is not implemented by dotforge." \
-        "Run 'dotforge --help' to see the supported commands."
-      ;;
+  apply)
+    shift || true
+    dotforge_apply
+    ;;
+  doctor)
+    shift
+    doctor_run
+    ;;
+  pkg)
+    shift
+    pkg_command "$@"
+    ;;
+  secrets)
+    shift
+    secrets_command "$@"
+    ;;
+  self)
+    shift
+    self_command "$@"
+    ;;
+  help | -h | --help)
+    dotforge_usage
+    ;;
+  *)
+    die_with_fix \
+      "Unknown command: $command" \
+      "The command is not implemented by dotforge." \
+      "Run 'dotforge --help' to see the supported commands."
+    ;;
   esac
 }
 
@@ -84,10 +84,11 @@ dotforge_apply() {
   dotforge_preflight_collect apply
   ensure_config_ready
 
-  prepare_runtime_secrets_dir
+  prepare_runtime_secrets_store
+  materialize_local_secret_files
 
   reconcile_packages
-  deploy_managed_assets "$DOTFORGE_RUNTIME_SECRETS_DIR"
+  deploy_managed_assets "$DOTFORGE_LOCAL_SECRETS_DIR"
   run_post_install_steps
   doctor_run
 }
@@ -97,57 +98,60 @@ pkg_command() {
   local token="${2:-}"
 
   case "$subcommand" in
-    add)
-      require_supported_platform
-      restore_interactive_stdin
-      dotforge_preflight_collect pkg add
-      ensure_config_ready
-      pkg_add "$token"
-      run_post_install_steps
-      doctor_run
-      ;;
-    rm)
-      require_supported_platform
-      restore_interactive_stdin
-      dotforge_preflight_collect pkg rm
-      ensure_config_ready
-      pkg_rm "$token"
-      run_post_install_steps
-      doctor_run
-      ;;
-    *)
-      die_with_fix \
-        "Unsupported pkg subcommand: ${subcommand:-<empty>}" \
-        "dotforge pkg only supports add and rm." \
-        "Use 'dotforge pkg add <package>' or 'dotforge pkg rm <package>'."
-      ;;
+  add)
+    require_supported_platform
+    restore_interactive_stdin
+    dotforge_preflight_collect pkg add
+    ensure_config_ready
+    pkg_add "$token"
+    run_post_install_steps
+    doctor_run
+    ;;
+  rm)
+    require_supported_platform
+    restore_interactive_stdin
+    dotforge_preflight_collect pkg rm
+    ensure_config_ready
+    pkg_rm "$token"
+    run_post_install_steps
+    doctor_run
+    ;;
+  *)
+    die_with_fix \
+      "Unsupported pkg subcommand: ${subcommand:-<empty>}" \
+      "dotforge pkg only supports add and rm." \
+      "Use 'dotforge pkg add <package>' or 'dotforge pkg rm <package>'."
+    ;;
   esac
 }
 
 secrets_command() {
   local subcommand="${1:-}"
+  local name="${2:-}"
+  local value="${3:-}"
 
   require_supported_platform
-  restore_interactive_stdin
   dotforge_preflight_collect secrets "$subcommand"
-  ensure_config_ready
 
   case "$subcommand" in
-    unpack)
-      secrets_unpack
-      doctor_run
-      ;;
-    pack)
-      shift
-      secrets_pack "${1:-}"
-      doctor_run
-      ;;
-    *)
-      die_with_fix \
-        "Unsupported secrets subcommand: ${subcommand:-<empty>}" \
-        "dotforge secrets only supports unpack and pack." \
-        "Use 'dotforge secrets unpack' or 'dotforge secrets pack <path>'."
-      ;;
+  add)
+    secrets_add "$name" "${value-}"
+    ;;
+  update)
+    secrets_update "$name" "${value-}"
+    ;;
+  remove)
+    secrets_remove "$name"
+    ;;
+  list)
+    secrets_list
+    ;;
+  *)
+    die_with_fix \
+      "Unsupported secrets subcommand: ${subcommand:-<empty>}" \
+      "dotforge secrets supports add, update, remove, and list." \
+      "Use 'dotforge secrets add <NAME> [VALUE|-]', 'dotforge secrets update <NAME> [NEW_VALUE|-]', 'dotforge secrets remove <NAME>', or 'dotforge secrets list'."
+    ;;
   esac
 }
 
@@ -158,10 +162,12 @@ Usage:
   dotforge doctor
   dotforge pkg add <package-id|brew:name|yay:name>
   dotforge pkg rm <package-id|brew:name|yay:name>
-  dotforge secrets unpack
-  dotforge secrets pack <path>
   dotforge self update
   dotforge self clean
+  dotforge secrets add <NAME> [VALUE|-]
+  dotforge secrets update <NAME> [NEW_VALUE|-]
+  dotforge secrets remove <NAME>
+  dotforge secrets list
 EOF
 }
 
