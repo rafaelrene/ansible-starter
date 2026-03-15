@@ -53,22 +53,23 @@ resolved=$(resolve_package_token 'go-task')
 assert_eq 'catalog|brew|formula|go-task/tap|go-task|go-task' "$resolved" 'catalog lookup should resolve macOS package metadata'
 
 secrets_dir="$TMPDIR_ROOT/secrets"
-mkdir -p "$secrets_dir/opencode"
-printf 'token-123\n' >"$secrets_dir/opencode/gsmcp_token"
+mkdir -p "$secrets_dir"
+printf 'ssh-secret\n' >"$secrets_dir/SSH_BITBUCKET_WORK"
+printf 'ssh-secret\n' >"$secrets_dir/SSH_HETZNER"
+printf 'ssh-secret\n' >"$secrets_dir/SSH_PERSONAL"
 
-deploy_opencode_assets "$secrets_dir"
+deploy_managed_assets "$secrets_dir"
 
-rendered_config="$HOME/.config/opencode/opencode.jsonc"
-[[ -f "$rendered_config" ]] || {
-  printf 'FAIL: rendered opencode config was not created\n' >&2
+[[ -L "$HOME/.config/opencode" ]] || {
+  printf 'FAIL: opencode config directory was not deployed as a symlink\n' >&2
   exit 1
 }
-grep -F 'x-gs-mcp-token:token-123' "$rendered_config" >/dev/null || {
-  printf 'FAIL: rendered opencode config does not contain the expected token\n' >&2
+grep -F 'x-gs-mcp-token:{file:~/.local/state/dotforge/secrets/OPENCODE_GSMCP_TOKEN}' "$HOME/.config/opencode/opencode.jsonc" >/dev/null || {
+  printf 'FAIL: opencode config does not reference the expected local secret file\n' >&2
   exit 1
 }
-[[ -L "$HOME/.config/opencode/AGENTS.md" ]] || {
-  printf 'FAIL: opencode AGENTS.md was not deployed as a symlink\n' >&2
+[[ "$(readlink "$HOME/.config/opencode")" == "$DOTFORGE_ASSETS_DIR/config/opencode" ]] || {
+  printf 'FAIL: opencode config directory points to the wrong source\n' >&2
   exit 1
 }
 

@@ -78,10 +78,11 @@ dotforge_apply() {
   dotforge_preflight_collect apply
   ensure_config_ready
 
-  prepare_runtime_secrets_dir
+  prepare_runtime_secrets_store
+  materialize_local_secret_files
 
   reconcile_packages
-  deploy_managed_assets "$DOTFORGE_RUNTIME_SECRETS_DIR"
+  deploy_managed_assets "$DOTFORGE_LOCAL_SECRETS_DIR"
   run_post_install_steps
   doctor_run
 }
@@ -120,27 +121,30 @@ pkg_command() {
 
 secrets_command() {
   local subcommand="${1:-}"
+  local name="${2:-}"
+  local value="${3:-}"
 
   require_supported_platform
-  restore_interactive_stdin
   dotforge_preflight_collect secrets "$subcommand"
-  ensure_config_ready
 
   case "$subcommand" in
-    unpack)
-      secrets_unpack
-      doctor_run
+    add)
+      secrets_add "$name" "${value-}"
       ;;
-    pack)
-      shift
-      secrets_pack "${1:-}"
-      doctor_run
+    update)
+      secrets_update "$name" "${value-}"
+      ;;
+    remove)
+      secrets_remove "$name"
+      ;;
+    list)
+      secrets_list
       ;;
     *)
       die_with_fix \
         "Unsupported secrets subcommand: ${subcommand:-<empty>}" \
-        "dotforge secrets only supports unpack and pack." \
-        "Use 'dotforge secrets unpack' or 'dotforge secrets pack <path>'."
+        "dotforge secrets supports add, update, remove, and list." \
+        "Use 'dotforge secrets add <NAME> [VALUE|-]', 'dotforge secrets update <NAME> [NEW_VALUE|-]', 'dotforge secrets remove <NAME>', or 'dotforge secrets list'."
       ;;
   esac
 }
@@ -152,8 +156,10 @@ Usage:
   dotforge doctor
   dotforge pkg add <package-id|brew:name|yay:name>
   dotforge pkg rm <package-id|brew:name|yay:name>
-  dotforge secrets unpack
-  dotforge secrets pack <path>
+  dotforge secrets add <NAME> [VALUE|-]
+  dotforge secrets update <NAME> [NEW_VALUE|-]
+  dotforge secrets remove <NAME>
+  dotforge secrets list
 EOF
 }
 
