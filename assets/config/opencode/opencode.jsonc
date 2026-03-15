@@ -22,7 +22,7 @@
         "--header",
         "x-gs-mcp:true",
         "--header",
-        "x-gs-mcp-token:__DOTFORGE_GSMCP_TOKEN__"
+        "x-gs-mcp-token:{file:~/.local/state/dotforge/secrets/OPENCODE_GSMCP_TOKEN}"
       ],
       "enabled": false
     }

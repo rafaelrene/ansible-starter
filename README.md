@@ -51,16 +51,22 @@ dotforge
 dotforge doctor
 dotforge pkg add <package-id|brew:name|yay:name>
 dotforge pkg rm <package-id|brew:name|yay:name>
-dotforge secrets unpack
-dotforge secrets pack <path>
+dotforge secrets add <NAME> [VALUE|-]
+dotforge secrets update <NAME> [NEW_VALUE|-]
+dotforge secrets remove <NAME>
+dotforge secrets list
 ```
 
 - Bare `dotforge` performs a full reconcile: packages, managed assets, secrets,
   post-install steps, then `dotforge doctor`.
 - `dotforge doctor` verifies package installation, symlink targets, deployed SSH
-  secrets, PATH wiring, and post-install state such as Volta-managed Node.
+  secrets, local secret files, PATH wiring, and post-install state such as
+  Volta-managed Node.
 - `dotforge pkg add` and `dotforge pkg rm` update
   `~/.config/dotforge/config`, reconcile packages immediately, then run doctor.
+- `dotforge secrets add`, `update`, and `remove` update the encrypted store at
+  `secrets/store.tsv.age`. Run `dotforge apply` after mutating secrets so local
+  secret files are refreshed.
 - During reconcile, dotforge detects packages that are already installed and
   skips reinstalling them while still treating them as managed packages.
 - Mutating commands collect required interactive input up front so package
@@ -97,29 +103,28 @@ environment or config file.
 
 ## Secrets
 
-Secrets now live in a single bundle at `secrets/bundle.tar.age`.
+Secrets now live in a single encrypted store at `secrets/store.tsv.age`.
 
-Current bundle layout:
-
-```text
-opencode/
-  gsmcp_token
-ssh/
-  bitbucket_work
-  hetzner
-  personal
-```
-
-Workflows:
+Typical workflow:
 
 ```bash
-dotforge secrets unpack
-dotforge secrets pack /path/to/unpacked/dir
+dotforge secrets add OPENCODE_GSMCP_TOKEN
+dotforge secrets add SSH_PERSONAL - <~/.ssh/personal
+dotforge secrets list
+dotforge apply
 ```
 
-- `unpack` decrypts the bundle into a temp directory and prints the path.
-- `pack` expects the same scoped tree, rebuilds `secrets/bundle.tar.age`,
-  reapplies the SSH keys locally, and reminds you to commit the updated bundle.
+- Secret names must be uppercase snake case, such as
+  `OPENCODE_GSMCP_TOKEN` or `SSH_PERSONAL`.
+- Pass a value as a command argument, omit it for a secure prompt, or pass `-`
+  to read the raw value from stdin.
+- `dotforge apply` decrypts the store temporarily, writes local secret files to
+  `~/.local/state/dotforge/secrets/<SECRET_NAME>`, deploys SSH keys to
+  `~/.ssh`, then securely wipes the temporary decrypted store.
+- Local secret files are intentionally persistent on the machine and are never
+  written back into the repository.
+- The repo-tracked opencode config uses OpenCode's `{file:...}` substitution to
+  read `~/.local/state/dotforge/secrets/OPENCODE_GSMCP_TOKEN` directly.
 
 ## Platform Notes
 

@@ -449,7 +449,7 @@ preflight_output=$(
     bootstrap_platform_prerequisites() { steps+=("bootstrap"); }
     ensure_age_passphrase_ready() { steps+=("passphrase"); }
     detect_shell_context() { steps+=("shell"); }
-    validate_age_bundle_passphrase() { steps+=("validate"); }
+    validate_age_store_passphrase() { steps+=("validate"); }
     info() { :; }
     dotforge_preflight_collect apply
     printf "%s\n" "${steps[*]}"
@@ -457,19 +457,44 @@ preflight_output=$(
 )
 assert_eq "config sudo keepalive bootstrap passphrase shell validate" "$preflight_output" "preflight should front-load config, sudo, bootstrap, passphrase, shell detection, and validation"
 
+secrets_preflight_output=$(
+  bash -lc '
+    set -euo pipefail
+    DOTFORGE_ROOT="'"$ROOT"'"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/config.sh"
+    . "'"$ROOT"'/lib/platform.sh"
+    . "'"$ROOT"'/lib/secrets.sh"
+    . "'"$ROOT"'/lib/preflight.sh"
+    steps=()
+    collect_config_inputs_if_needed() { steps+=("config"); }
+    ensure_sudo_session() { steps+=("sudo"); }
+    start_sudo_keepalive() { steps+=("keepalive"); }
+    bootstrap_platform_prerequisites() { steps+=("bootstrap"); }
+    ensure_age_passphrase_ready() { steps+=("passphrase"); }
+    detect_shell_context() { steps+=("shell"); }
+    validate_age_store_passphrase() { steps+=("validate"); }
+    info() { :; }
+    dotforge_preflight_collect secrets add
+    printf "%s\n" "${steps[*]}"
+  '
+)
+assert_eq "passphrase" "$secrets_preflight_output" "secrets preflight should only prompt for the age passphrase"
+
 prepare_runtime_output=$(
   bash -lc '
     set -euo pipefail
     test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-runtime-secrets.XXXXXX")
     trap "rm -rf \"$test_root\"" EXIT INT TERM
     DOTFORGE_ROOT="'"$ROOT"'"
-    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
-    mkdir -p "$test_root/source/ssh"
-    printf "secret\n" >"$test_root/source/ssh/key"
-    tar -cf "$test_root/archive.tar" -C "$test_root/source" ssh
+    DOTFORGE_SECRETS_STORE="$test_root/store.tsv.age"
     . "'"$ROOT"'/lib/common.sh"
     . "'"$ROOT"'/lib/secrets.sh"
     : >"$test_root/age.log"
+    cat >"$test_root/plain.tsv" <<EOF
+v1
+SSH_PERSONAL	c2VjcmV0Cg==
+EOF
     age_run() {
       printf "%s\n" "$*" >>"$test_root/age.log"
       local mode=$1
@@ -484,25 +509,75 @@ prepare_runtime_output=$(
           fi
           shift
         done
-        cp "$test_root/archive.tar" "$output"
+        cp "$test_root/plain.tsv" "$output"
       fi
     }
-    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
+    printf "store\n" >"$DOTFORGE_SECRETS_STORE"
     DOTFORGE_AGE_PASSPHRASE=expected-passphrase
-    prepare_runtime_secrets_dir
-    first_dir=$DOTFORGE_RUNTIME_SECRETS_DIR
-    prepare_runtime_secrets_dir
-    second_dir=$DOTFORGE_RUNTIME_SECRETS_DIR
+    prepare_runtime_secrets_store
+    first_store=$DOTFORGE_RUNTIME_SECRETS_STORE
+    prepare_runtime_secrets_store
+    second_store=$DOTFORGE_RUNTIME_SECRETS_STORE
     cleanup_lines=$(printf "%s\n" "$DOTFORGE_CLEANUP_COMMANDS" | awk "NF { count++ } END { print count + 0 }")
     age_calls=$(wc -l <"$test_root/age.log" | awk "{print \$1}")
-    if [[ "$first_dir" == "$second_dir" ]]; then
+    if [[ "$first_store" == "$second_store" ]]; then
       printf "same %s %s\n" "$age_calls" "$cleanup_lines"
     else
       printf "different %s %s\n" "$age_calls" "$cleanup_lines"
     fi
   '
 )
-assert_eq "same 2 2" "$prepare_runtime_output" "prepare_runtime_secrets_dir should memoize the runtime dir and keep cleanup registrations in the parent shell"
+assert_eq "same 2 3" "$prepare_runtime_output" "prepare_runtime_secrets_store should memoize the runtime store and keep cleanup registrations in the parent shell"
+
+materialize_output=$(
+  bash -lc '
+    set -euo pipefail
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-materialize-secrets.XXXXXX")
+    trap "rm -rf \"$test_root\"" EXIT INT TERM
+    export HOME="$test_root/home"
+    DOTFORGE_ROOT="'"$ROOT"'"
+    DOTFORGE_STATE_DIR="$test_root/state"
+    DOTFORGE_SECRETS_STORE="$test_root/store.tsv.age"
+    mkdir -p "$HOME" "$DOTFORGE_STATE_DIR"
+    . "'"$ROOT"'/lib/common.sh"
+    . "'"$ROOT"'/lib/secrets.sh"
+    cat >"$test_root/plain.tsv" <<EOF
+v1
+OPENCODE_GSMCP_TOKEN	dG9rZW4K
+SSH_BITBUCKET_WORK	c2VjcmV0Cg==
+SSH_HETZNER	c2VjcmV0Cg==
+SSH_PERSONAL	c2VjcmV0Cg==
+EOF
+    age_run() {
+      local mode=$1
+      shift
+      local output=""
+      while [[ $# -gt 0 ]]; do
+        if [[ "$1" == "-o" ]]; then
+          output=$2
+          shift 2
+          continue
+        fi
+        shift
+      done
+      if [[ "$mode" == "decrypt" ]]; then
+        cp "$test_root/plain.tsv" "$output"
+      fi
+    }
+    printf "store\n" >"$DOTFORGE_SECRETS_STORE"
+    DOTFORGE_AGE_PASSPHRASE=expected-passphrase
+    materialize_local_secret_files
+    if stat -f "%Lp" "$DOTFORGE_LOCAL_SECRETS_DIR" >/dev/null 2>&1; then
+      dir_mode=$(stat -f "%Lp" "$DOTFORGE_LOCAL_SECRETS_DIR")
+      file_mode=$(stat -f "%Lp" "$DOTFORGE_LOCAL_SECRETS_DIR/OPENCODE_GSMCP_TOKEN")
+    else
+      dir_mode=$(stat -c "%a" "$DOTFORGE_LOCAL_SECRETS_DIR")
+      file_mode=$(stat -c "%a" "$DOTFORGE_LOCAL_SECRETS_DIR/OPENCODE_GSMCP_TOKEN")
+    fi
+    printf "%s %s %s\n" "$dir_mode" "$file_mode" "$(find "$DOTFORGE_LOCAL_SECRETS_DIR" -maxdepth 1 -type f | wc -l | awk "{print \$1}")"
+  '
+)
+assert_eq "700 600 4" "$materialize_output" "materialize_local_secret_files should write flat local secret files with secure modes"
 
 dotforge_apply_prompt_output=$(
   bash -lc '
@@ -513,16 +588,16 @@ dotforge_apply_prompt_output=$(
     /usr/bin/sed "\$d" "'"$ROOT"'/bin/dotforge" >"$dotforge_lib"
     DOTFORGE_ROOT="'"$ROOT"'"
     DOTFORGE_STATE_DIR="$test_root/state"
-    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
+    DOTFORGE_SECRETS_STORE="$test_root/store.tsv.age"
     mkdir -p "$DOTFORGE_STATE_DIR"
-    mkdir -p "$test_root/source/ssh"
-    printf "secret\n" >"$test_root/source/ssh/bitbucket_work"
-    printf "secret\n" >"$test_root/source/ssh/hetzner"
-    printf "secret\n" >"$test_root/source/ssh/personal"
-    mkdir -p "$test_root/source/opencode"
-    printf "token\n" >"$test_root/source/opencode/gsmcp_token"
-    tar -cf "$test_root/archive.tar" -C "$test_root/source" ssh opencode
-    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
+    cat >"$test_root/plain.tsv" <<EOF
+v1
+OPENCODE_GSMCP_TOKEN	dG9rZW4K
+SSH_BITBUCKET_WORK	c2VjcmV0Cg==
+SSH_HETZNER	c2VjcmV0Cg==
+SSH_PERSONAL	c2VjcmV0Cg==
+EOF
+    printf "store\n" >"$DOTFORGE_SECRETS_STORE"
     : >"$test_root/prompt.log"
     . "$dotforge_lib"
     prompt_for_age_passphrase() {
@@ -542,7 +617,7 @@ dotforge_apply_prompt_output=$(
           fi
           shift
         done
-        cp "$test_root/archive.tar" "$output"
+        cp "$test_root/plain.tsv" "$output"
       fi
     }
     require_supported_platform() { DOTFORGE_PLATFORM=macos; }
@@ -567,117 +642,55 @@ dotforge_apply_prompt_output=$(
 )
 assert_eq "1" "$dotforge_apply_prompt_output" "dotforge_apply should prompt for the age passphrase only once per run"
 
-dotforge_unpack_prompt_output=$(
+secrets_crud_output=$(
   bash -lc '
     set -euo pipefail
-    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-unpack-prompt.XXXXXX")
+    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-secrets-crud.XXXXXX")
     dotforge_lib=$(mktemp "'"$ROOT"'/bin/dotforge-lib.XXXXXX")
     trap "rm -rf \"$test_root\" \"$dotforge_lib\"" EXIT INT TERM
     /usr/bin/sed "\$d" "'"$ROOT"'/bin/dotforge" >"$dotforge_lib"
     DOTFORGE_ROOT="'"$ROOT"'"
     DOTFORGE_STATE_DIR="$test_root/state"
-    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
+    DOTFORGE_SECRETS_STORE="$test_root/store.tsv.age"
     mkdir -p "$DOTFORGE_STATE_DIR"
-    mkdir -p "$test_root/source/ssh"
-    printf "secret\n" >"$test_root/source/ssh/key"
-    tar -cf "$test_root/archive.tar" -C "$test_root/source" ssh
-    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
-    : >"$test_root/prompt.log"
     . "$dotforge_lib"
-    prompt_for_age_passphrase() {
-      printf "prompt\n" >>"$test_root/prompt.log"
-      printf "expected-passphrase"
-    }
-    age_run() {
-      local mode=$1
-      shift
-      if [[ "$mode" == "decrypt" ]]; then
-        local output=""
-        while [[ $# -gt 0 ]]; do
-          if [[ "$1" == "-o" ]]; then
-            output=$2
-            shift 2
-            continue
-          fi
-          shift
-        done
-        cp "$test_root/archive.tar" "$output"
-      fi
-    }
-    require_supported_platform() { DOTFORGE_PLATFORM=macos; }
-    restore_interactive_stdin() { :; }
-    collect_config_inputs_if_needed() { :; }
-    ensure_sudo_session() { :; }
-    start_sudo_keepalive() { :; }
-    bootstrap_platform_prerequisites() { :; }
-    ensure_config_ready() { :; }
-    info() { :; }
-    doctor_run() { :; }
-    secrets_command unpack
-    wc -l <"$test_root/prompt.log" | awk "{print \$1}"
-  '
-)
-assert_eq "1" "$dotforge_unpack_prompt_output" "dotforge secrets unpack should prompt for the age passphrase only once per run"
-
-dotforge_pack_prompt_output=$(
-  bash -lc '
-    set -euo pipefail
-    test_root=$(mktemp -d "${TMPDIR:-/tmp}/dotforge-pack-prompt.XXXXXX")
-    dotforge_lib=$(mktemp "'"$ROOT"'/bin/dotforge-lib.XXXXXX")
-    trap "rm -rf \"$test_root\" \"$dotforge_lib\"" EXIT INT TERM
-    /usr/bin/sed "\$d" "'"$ROOT"'/bin/dotforge" >"$dotforge_lib"
-    DOTFORGE_ROOT="'"$ROOT"'"
-    DOTFORGE_STATE_DIR="$test_root/state"
-    DOTFORGE_SECRETS_BUNDLE="$test_root/bundle.tar.age"
-    mkdir -p "$DOTFORGE_STATE_DIR"
-    mkdir -p "$test_root/source/ssh"
-    printf "secret\n" >"$test_root/source/ssh/key"
-    mkdir -p "$test_root/runtime/ssh"
-    printf "runtime-secret\n" >"$test_root/runtime/ssh/key"
-    tar -cf "$test_root/archive.tar" -C "$test_root/runtime" ssh
-    printf "bundle\n" >"$DOTFORGE_SECRETS_BUNDLE"
-    : >"$test_root/prompt.log"
-    . "$dotforge_lib"
-    prompt_for_age_passphrase() {
-      printf "prompt\n" >>"$test_root/prompt.log"
-      printf "expected-passphrase"
-    }
     age_run() {
       local mode=$1
       shift
       local output=""
+      local input=""
       while [[ $# -gt 0 ]]; do
         if [[ "$1" == "-o" ]]; then
           output=$2
           shift 2
           continue
         fi
+        input=$1
         shift
       done
-      if [[ "$mode" == "encrypt" ]]; then
-        printf "bundle\n" >"$output"
+      if [[ "$mode" == "decrypt" ]]; then
+        cp "$DOTFORGE_SECRETS_STORE" "$output"
         return 0
       fi
-      if [[ "$mode" == "decrypt" ]]; then
-        cp "$test_root/archive.tar" "$output"
+      if [[ "$mode" == "encrypt" ]]; then
+        cp "$input" "$output"
         return 0
       fi
     }
     require_supported_platform() { DOTFORGE_PLATFORM=macos; }
-    restore_interactive_stdin() { :; }
-    collect_config_inputs_if_needed() { :; }
-    ensure_sudo_session() { :; }
-    start_sudo_keepalive() { :; }
-    bootstrap_platform_prerequisites() { :; }
-    ensure_config_ready() { :; }
-    deploy_ssh_assets() { :; }
-    info() { :; }
-    doctor_run() { :; }
-    secrets_command pack "$test_root/source"
-    wc -l <"$test_root/prompt.log" | awk "{print \$1}"
+    dotforge_preflight_collect() { :; }
+    DOTFORGE_AGE_PASSPHRASE=expected-passphrase
+    printf "multiline\nsecret\n" | secrets_command add SSH_PERSONAL -
+    secrets_command add OPENCODE_GSMCP_TOKEN token-123 >"$test_root/add.log"
+    update_output=$(secrets_command update OPENCODE_GSMCP_TOKEN token-456)
+    remove_output=$(secrets_command remove DOES_NOT_EXIST)
+    list_output=$(secrets_command list)
+    printf "%s\n--\n%s\n--\n%s\n--\n" "$update_output" "$remove_output" "$list_output"
   '
 )
-assert_eq "1" "$dotforge_pack_prompt_output" "dotforge secrets pack should prompt for the age passphrase only once per run"
+assert_contains "Run 'dotforge apply' to redeploy local secret files." "$secrets_crud_output" "secrets update should remind the user to re-apply"
+assert_contains "Nothing to remove." "$secrets_crud_output" "secrets remove should be a no-op on missing keys"
+assert_contains $'OPENCODE_GSMCP_TOKEN\nSSH_PERSONAL' "$secrets_crud_output" "secrets list should print stored names in sorted order"
 
 sudo_output=$(
   bash -lc '

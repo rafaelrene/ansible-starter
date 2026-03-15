@@ -2,7 +2,7 @@
 
 preflight_needs_config() {
   case "$1" in
-    apply|pkg|secrets)
+    apply|pkg)
       return 0
       ;;
     *)
@@ -13,7 +13,7 @@ preflight_needs_config() {
 
 preflight_needs_passphrase() {
   case "$1:$2" in
-    apply:|secrets:unpack|secrets:pack)
+    apply:|secrets:add|secrets:update|secrets:remove|secrets:list)
       return 0
       ;;
     *)
@@ -35,7 +35,7 @@ preflight_needs_shell_context() {
 
 preflight_needs_validated_passphrase() {
   case "$1:$2" in
-    apply:|secrets:unpack)
+    apply:|secrets:update|secrets:remove|secrets:list)
       return 0
       ;;
     *)
@@ -52,9 +52,11 @@ dotforge_preflight_collect() {
     collect_config_inputs_if_needed
   fi
 
-  ensure_sudo_session
-  start_sudo_keepalive
-  bootstrap_platform_prerequisites
+  if [[ "$command" != "secrets" ]]; then
+    ensure_sudo_session
+    start_sudo_keepalive
+    bootstrap_platform_prerequisites
+  fi
 
   if preflight_needs_passphrase "$command" "$subcommand"; then
     ensure_age_passphrase_ready
@@ -68,6 +70,6 @@ dotforge_preflight_collect() {
   fi
 
   if preflight_needs_validated_passphrase "$command" "$subcommand"; then
-    validate_age_bundle_passphrase
+    validate_age_store_passphrase
   fi
 }
