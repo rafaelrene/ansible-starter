@@ -29,6 +29,8 @@ DOTFORGE_ROOT=$(
 . "$DOTFORGE_ROOT/lib/assets.sh"
 # shellcheck source=lib/doctor.sh
 . "$DOTFORGE_ROOT/lib/doctor.sh"
+# shellcheck source=lib/self.sh
+. "$DOTFORGE_ROOT/lib/self.sh"
 
 main() {
   local command="${1:-apply}"
@@ -51,6 +53,10 @@ main() {
     secrets)
       shift
       secrets_command "$@"
+      ;;
+    self)
+      shift
+      self_command "$@"
       ;;
     help|-h|--help)
       dotforge_usage
@@ -154,6 +160,8 @@ Usage:
   dotforge pkg rm <package-id|brew:name|yay:name>
   dotforge secrets unpack
   dotforge secrets pack <path>
+  dotforge self update
+  dotforge self clean
 EOF
 }
 

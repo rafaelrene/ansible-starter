@@ -53,6 +53,8 @@ dotforge pkg add <package-id|brew:name|yay:name>
 dotforge pkg rm <package-id|brew:name|yay:name>
 dotforge secrets unpack
 dotforge secrets pack <path>
+dotforge self update
+dotforge self clean
 ```
 
 - Bare `dotforge` performs a full reconcile: packages, managed assets, secrets,
@@ -66,6 +68,12 @@ dotforge secrets pack <path>
 - Mutating commands collect required interactive input up front so package
   selection, sudo authentication, and the age passphrase are not re-requested
   later in the same run.
+- `dotforge self update` fetches the current dotforge branch and refuses to
+  overwrite local file changes or local-only commits. When it refuses, it shows
+  both `git status --short` output and unpushed commits.
+- `dotforge self clean` force-resets the current dotforge branch to
+  `origin/<current-branch>` and removes untracked files while preserving ignored
+  files.
 
 ## Config
 
