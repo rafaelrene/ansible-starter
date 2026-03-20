@@ -24,6 +24,7 @@ brew_formula_packages:
   - neovim
   - nushell
   - openssh
+  - jq
   - ripgrep
   - sst/tap/opencode
   - tldr
@@ -55,6 +56,7 @@ arch_packages:
   - extra/fd
   - extra/ghostty
   - extra/htop
+  - extra/jq
   - extra/lazygit
   - extra/neovim
   - extra/nushell

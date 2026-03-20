@@ -1,15 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
-  "plugin": ["./.opencode/plugins/library-context.ts"],
-  "command": {
-    "libctx": {
-      "description": "Lookup package/repository usage from source code",
-      "agent": "library-context",
-      "subtask": true,
-      "template": "Use `library_code_lookup` with the first token in `$ARGUMENTS` as explicit `package_name` spec (`npm:<package>@<version>` or `git:<owner>/<repo>@<ref>`), and the remaining text as `query`. Return structured JSON only.",
-    },
-  },
   "mcp": {
     "gsmcp": {
       "type": "local",

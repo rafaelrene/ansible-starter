@@ -15,6 +15,7 @@
 - name: Setup global symlinks for scripts
   loop:
     - { name: git-delete-branches, as: gdb }
+    - { name: repo-context, as: rcx }
     - { name: switch-to-subrepo, as: sts }
   ansible.builtin.file:
     src: "{{ role_path }}/files/{{ item.name }}"
