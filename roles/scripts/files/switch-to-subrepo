@@ -19,7 +19,15 @@ if ! repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
 	exit 1
 fi
 
-gitmodules_path="$repo_root/.gitmodules"
+search_root="$repo_root"
+
+if superproject_root=$(git rev-parse --show-superproject-working-tree 2>/dev/null); then
+	if [[ -n $superproject_root ]] && [[ -d $superproject_root ]]; then
+		search_root="$superproject_root"
+	fi
+fi
+
+gitmodules_path="$search_root/.gitmodules"
 
 if ! submodule_config=$(git config --file "$gitmodules_path" --get-regexp '^submodule\..*\.path$' 2>/dev/null); then
 	echo "no direct submodules found" >&2
@@ -32,7 +40,7 @@ while IFS= read -r line; do
 	[[ -z $line ]] && continue
 
 	submodule_path=${line#* }
-	absolute_path="$repo_root/$submodule_path"
+	absolute_path="$search_root/$submodule_path"
 
 	if [[ -d $absolute_path ]]; then
 		submodule_paths+=("$submodule_path")
@@ -54,7 +62,7 @@ if [[ -z $selected_relative_path ]]; then
 	exit 0
 fi
 
-absolute_path="$repo_root/$selected_relative_path"
+absolute_path="$search_root/$selected_relative_path"
 base_name=$(basename "$selected_relative_path")
 
 if ! session_name=$(tmux display-message -p '#S' 2>/dev/null); then
