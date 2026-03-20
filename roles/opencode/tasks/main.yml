@@ -5,3 +5,16 @@
     dest: ~/.config/opencode
     mode: u=rwx,go=r
     state: link
+
+- name: Ensure codex config directory exists
+  ansible.builtin.file:
+    path: ~/.codex
+    state: directory
+    mode: u=rwx,go=
+
+- name: Share OpenCode AGENTS.md with Codex
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.codex/AGENTS.md
+    state: link
+    force: true
