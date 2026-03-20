@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+if [[ -z ${TMUX:-} ]]; then
+	echo "switch-to-subrepo must be run inside tmux" >&2
+	exit 1
+fi
+
+for dependency in git fzf tmux; do
+	if ! command -v "$dependency" >/dev/null 2>&1; then
+		echo "missing dependency: $dependency" >&2
+		exit 1
+	fi
+done
+
+if ! repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+	echo "not inside a git repo" >&2
+	exit 1
+fi
+
+gitmodules_path="$repo_root/.gitmodules"
+
+if ! submodule_config=$(git config --file "$gitmodules_path" --get-regexp '^submodule\..*\.path$' 2>/dev/null); then
+	echo "no direct submodules found" >&2
+	exit 1
+fi
+
+submodule_paths=()
+
+while IFS= read -r line; do
+	[[ -z $line ]] && continue
+
+	submodule_path=${line#* }
+	absolute_path="$repo_root/$submodule_path"
+
+	if [[ -d $absolute_path ]]; then
+		submodule_paths+=("$submodule_path")
+	fi
+done <<<"$submodule_config"
+
+if [[ ${#submodule_paths[@]} -eq 0 ]]; then
+	echo "no initialized submodules found" >&2
+	exit 1
+fi
+
+selected_relative_path=""
+
+if ! selected_relative_path=$(printf '%s\n' "${submodule_paths[@]}" | fzf); then
+	exit 0
+fi
+
+if [[ -z $selected_relative_path ]]; then
+	exit 0
+fi
+
+absolute_path="$repo_root/$selected_relative_path"
+base_name=$(basename "$selected_relative_path")
+
+if ! session_name=$(tmux display-message -p '#S' 2>/dev/null); then
+	echo "failed to resolve current tmux session" >&2
+	exit 1
+fi
+
+if ! window_names=$(tmux list-windows -t "$session_name" -F '#{window_name}' 2>/dev/null); then
+	echo "failed to list tmux windows" >&2
+	exit 1
+fi
+
+occupied_slots=()
+series_prefix="$base_name-"
+
+while IFS= read -r existing_window_name; do
+	[[ -z $existing_window_name ]] && continue
+
+	if [[ $existing_window_name == "$base_name" ]]; then
+		occupied_slots[1]=1
+		continue
+	fi
+
+	if [[ $existing_window_name != "$series_prefix"* ]]; then
+		continue
+	fi
+
+	slot_suffix=${existing_window_name#"$series_prefix"}
+
+	if [[ $slot_suffix =~ ^[1-9][0-9]*$ ]] && (( slot_suffix >= 2 )); then
+		occupied_slots[slot_suffix]=1
+	fi
+done <<<"$window_names"
+
+window_name="$base_name"
+
+if [[ ${occupied_slots[1]+x} ]]; then
+	for ((slot_number = 2; ; slot_number++)); do
+		if [[ ! ${occupied_slots[slot_number]+x} ]]; then
+			window_name="$base_name-$slot_number"
+			break
+		fi
+	done
+fi
+
+if ! tmux new-window -d -t "$session_name:" -n "$window_name" -c "$absolute_path" >/dev/null 2>&1; then
+	echo "failed to create tmux window" >&2
+	exit 1
+fi
+
+if ! tmux select-window -t "$session_name:$window_name" >/dev/null 2>&1; then
+	echo "failed to select tmux window" >&2
+	exit 1
+fi
