@@ -1,6 +1,14 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
+  "permission": {
+    "skill": {
+      "repo-context": "allow"
+    },
+    "external_directory": {
+      "~/.local/share/agent-sources/**": "allow"
+    }
+  },
   "mcp": {
     "gsmcp": {
       "type": "local",
