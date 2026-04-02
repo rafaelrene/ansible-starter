@@ -19,4 +19,4 @@
 
 ## Preferences
 
-- When you need to look up how a function / library works, prefer using `library-context` agent to clone and inspect source code directly.
+- When you need to look up how a function / library works, prefer using `repo-context` skill and `rcx` command

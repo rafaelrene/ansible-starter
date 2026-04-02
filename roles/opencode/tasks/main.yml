@@ -12,9 +12,38 @@
     state: directory
     mode: u=rwx,go=
 
+- name: Ensure claude config directory exists
+  ansible.builtin.file:
+    path: ~/.claude
+    state: directory
+    mode: u=rwx,go=
+
 - name: Share OpenCode AGENTS.md with Codex
   ansible.builtin.file:
     src: "{{ role_path }}/files/AGENTS.md"
     dest: ~/.codex/AGENTS.md
+    state: link
+    force: true
+
+- name: Share OpenCode skills with Codex
+  loop: "{{ query('fileglob', role_path ~ '/files/skills/*/') }}"
+  ansible.builtin.file:
+    src: "{{ item | regex_replace('/$', '') }}"
+    dest: "~/.codex/skills/{{ (item | regex_replace('/$', '')) | basename }}"
+    state: link
+    force: true
+
+- name: Share OpenCode AGENTS.md with Claude
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.claude/CLAUDE.md
+    state: link
+    force: true
+
+- name: Share OpenCode skills with Claude
+  loop: "{{ query('fileglob', role_path ~ '/files/skills/*/') }}"
+  ansible.builtin.file:
+    src: "{{ item | regex_replace('/$', '') }}"
+    dest: "~/.claude/skills/{{ (item | regex_replace('/$', '')) | basename }}"
     state: link
     force: true

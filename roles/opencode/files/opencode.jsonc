@@ -3,11 +3,11 @@
   "autoupdate": false,
   "permission": {
     "skill": {
-      "repo-context": "allow"
+      "repo-context": "allow",
     },
     "external_directory": {
-      "~/.local/share/agent-sources/**": "allow"
-    }
+      "~/.local/share/agent-sources/**": "allow",
+    },
   },
   "mcp": {
     "gsmcp": {
