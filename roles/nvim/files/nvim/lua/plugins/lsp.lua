@@ -1,6 +1,34 @@
 local util = require("lspconfig/util")
 
+local eslint_root = util.root_pattern(
+  "eslint.config.js",
+  "eslint.config.mjs",
+  "eslint.config.cjs",
+  "eslint.config.ts",
+  "eslint.config.mts",
+  "eslint.config.cts",
+  ".eslintrc",
+  ".eslintrc.js",
+  ".eslintrc.cjs",
+  ".eslintrc.json",
+  ".eslintrc.yaml",
+  ".eslintrc.yml"
+)
+
+local function get_eslint_root(fname)
+  return eslint_root(fname) or vim.fs.dirname(vim.fs.find(".git", { path = fname, upward = true })[1])
+end
+
 return {
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = {
+      formatters = {
+        oxfmt = { require_cwd = true },
+      },
+    },
+  },
   {
     "neovim/nvim-lspconfig",
     opts = {
@@ -10,6 +38,16 @@ return {
         },
         ts_ls = {
           enable = false,
+        },
+        vtsls = {
+          settings = {
+            typescript = {
+              preferGoToSourceDefinition = true,
+            },
+            javascript = {
+              preferGoToSourceDefinition = true,
+            },
+          },
         },
         emmet_language_server = {
           filetypes = {
@@ -70,7 +108,22 @@ return {
           end)
           -- end workaround
         end,
-        eslint = function()
+        eslint = function(_, opts)
+          vim.lsp.config(
+            "eslint",
+            vim.tbl_deep_extend("force", opts, {
+              root_dir = function(bufnr, on_dir)
+                local fname = vim.api.nvim_buf_get_name(bufnr)
+                local root = get_eslint_root(fname)
+
+                if root then
+                  on_dir(root)
+                end
+              end,
+            })
+          )
+          vim.lsp.enable("eslint")
+
           require("snacks").util.lsp.on(function(_, client)
             if client.name == "eslint" then
               client.server_capabilities.documentFormattingProvider = true
@@ -86,6 +139,8 @@ return {
               end
             end,
           })
+
+          return true
         end,
       },
     },
