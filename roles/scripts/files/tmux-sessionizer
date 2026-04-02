@@ -1,58 +1,21 @@
 #!/usr/bin/env bash
 
-script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-script_path="$script_dir/$(basename -- "${BASH_SOURCE[0]}")"
-reload_cmd=$(printf '%q --candidates {q} || true' "$script_path")
-
-roots=(
-	"$HOME"
-	"$HOME/code"
-	"$HOME/code/.personal"
-	"$HOME/code/.sources"
-	"$HOME/.config"
+search_paths=(
+  "$HOME"
+  "$HOME/code"
+  "$HOME/code/.personal"
+  "$HOME/code/.sources"
+  "$HOME/.config"
 )
 
-list_candidates() {
-	local query=$1
-	local root
-
-	if [[ $query == :* ]]; then
-		query=${query#:}
-		[[ -z $query ]] && return 0
-		for root in "${roots[@]}"; do
-			printf '[NEW] : %s/%s\n' "$root" "$query"
-		done
-		return 0
-	fi
-
-	for root in "${roots[@]}"; do
-		find -L "$root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null
-	done
-
-	return 0
-}
-
-if [[ ${1:-} == "--candidates" ]]; then
-	list_candidates "${2:-}"
-	exit 0
-fi
-
 if [[ $# -eq 1 ]]; then
-	selected=$1
+  selected=$1
 else
-	selected=$(list_candidates "" | fzf --bind "change:reload:$reload_cmd")
+  selected=$(find -L "${search_paths[@]}" -mindepth 1 -maxdepth 1 -type d | fzf)
 fi
 
 if [[ -z $selected ]]; then
-	exit 0
-fi
-
-if [[ $selected == '[NEW] : '* ]]; then
-	selected=${selected#'[NEW] : '}
-	mkdir -p "$selected"
-elif [[ $selected == '[NEW] '* ]]; then
-	selected=${selected#'[NEW] '}
-	mkdir -p "$selected"
+  exit 0
 fi
 
 selected_name=$(echo "$selected" | awk -F / -v OFS=/ '{ print $(NF-1), $NF }' | tr . _)
@@ -60,14 +23,14 @@ tmux_running=$(pgrep tmux)
 
 # TODO: Add default split pane for `Main` window
 if [[ -z $TMUX ]] && [[ -z $tmux_running ]] || ! tmux has-session -t="$selected_name" 2>/dev/null; then
-	tmux new-session -ds "$selected_name" -n "Main" -c "$selected"
-	tmux new-window -dn "Tests" -t "$selected_name:" -c "$selected"
+  tmux new-session -ds "$selected_name" -n "Main" -c "$selected"
+  tmux new-window -dn "Tests" -t "$selected_name:" -c "$selected"
 fi
 
 if [[ -z $TMUX ]]; then
-	# NOTE: When we're not running tmux, attach to the session
-	tmux attach-session -t "$selected_name"
+  # NOTE: When we're not running tmux, attach to the session
+  tmux attach-session -t "$selected_name"
 else
-	# NOTE: When we're running tmux, switch to the session
-	tmux switch-client -t "$selected_name"
+  # NOTE: When we're running tmux, switch to the session
+  tmux switch-client -t "$selected_name"
 fi
