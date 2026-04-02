@@ -1,0 +1,58 @@
+#!/bin/zsh
+
+# Required parameters:
+# @raycast.schemaVersion 1
+# @raycast.title Create Web App
+# @raycast.mode fullOutput
+
+# Optional parameters:
+# @raycast.packageName Web Apps
+# @raycast.argument1 { "type": "text", "placeholder": "App Name" }
+# @raycast.argument2 { "type": "text", "placeholder": "App URL" }
+
+set -euo pipefail
+
+raw_name="${1:-}"
+url="${2:-}"
+
+if [[ -z "$raw_name" || -z "$url" ]]; then
+  echo "App Name and App URL are required"
+  exit 1
+fi
+
+if [[ ! "$url" =~ '^https?://' ]]; then
+  echo "URL must start with http:// or https://"
+  exit 1
+fi
+
+script_dir="$HOME/code/.personal/ansible/roles/web-apps/files"
+
+display_name="$(printf '%s' "$raw_name" | tr '\n' ' ' | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')"
+
+case "$display_name" in
+  *" Web App") ;;
+  *) display_name="$display_name Web App" ;;
+esac
+
+file_name="$(printf '%s' "$display_name" | sed 's#/#-#g')"
+script_path="$script_dir/$file_name"
+
+escaped_url="$(printf "%s" "$url" | sed "s/'/'\\\\''/g")"
+
+cat > "$script_path" <<EOF
+#!/bin/zsh
+# @raycast.schemaVersion 1
+# @raycast.title $display_name
+# @raycast.mode silent
+# @raycast.packageName Web Apps
+
+exec /Applications/Chromium.app/Contents/MacOS/Chromium \\
+  --app='$escaped_url' \\
+  "\$@"
+EOF
+
+chmod a+rwx "$script_path"
+
+echo "Created: $file_name"
+echo "URL: $url"
+

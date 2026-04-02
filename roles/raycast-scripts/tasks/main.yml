@@ -1,0 +1,7 @@
+---
+- name: Setup symlinks for raycast-scripts
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/raycast-scripts
+    mode: u=rwx,go=r
+    state: link

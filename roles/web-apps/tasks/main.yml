@@ -1,0 +1,7 @@
+---
+- name: Setup symlinks for web-apps
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.web-apps
+    mode: u=rwx,go=r
+    state: link

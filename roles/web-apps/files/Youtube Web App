@@ -1,0 +1,9 @@
+#!/bin/zsh
+# @raycast.schemaVersion 1
+# @raycast.title Youtube Web App
+# @raycast.mode silent
+# @raycast.packageName Web Apps
+
+exec /Applications/Chromium.app/Contents/MacOS/Chromium \
+  --app='https://youtube.com' \
+  "$@"
