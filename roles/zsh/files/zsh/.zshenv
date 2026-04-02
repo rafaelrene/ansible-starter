@@ -4,6 +4,8 @@
 
 [ -x "$(command -v conda)" ] && eval "$(conda "shell.$(basename "${SHELL}")" hook)"
 
+[ -x "/opt/homebrew/bin/mise" ] && eval "$(mise activate zsh)"
+
 [ -r "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 [ -r "$HOME/.ghcup/env" ] && source "$HOME/.ghcup/env"
 [ -r "$HOME/.opam/opam-init/init.zsh" ] && source "$HOME/.opam/opam-init/init.zsh" > /dev/null 2> /dev/null

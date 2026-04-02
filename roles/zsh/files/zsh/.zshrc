@@ -13,6 +13,4 @@ source $ZSH_HOME/bindings.sh
 
 eval $(ssh-agent) > /dev/null 2> /dev/null
 
-[ -x /opt/homebrew/bin/mise ] && source $ZSH_HOME/mise.sh
-
 # [ -x /opt/homebrew/bin/nu ] && SHELL=/opt/homebrew/bin/nu exec nu
