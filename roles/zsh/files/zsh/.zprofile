@@ -23,7 +23,7 @@ export CXXFLAGS="-stdlib=libc++"
 
 export EDITOR="nvim"
 
-export PYTHON="/opt/homebrew/Caskroom/miniconda/base/bin/python"
+export PYTHON="/Users/rafael/.local/share/mise/installs/python/3.14.3/bin/python"
 
 export GIT_CONFIG_SYSTEM="$XDG_CONFIG_HOME/git/.gitconfig"
 export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
