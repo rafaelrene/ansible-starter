@@ -25,11 +25,24 @@
     state: link
     force: true
 
-- name: Share OpenCode skills with Codex
-  loop: "{{ query('fileglob', role_path ~ '/files/skills/*/') }}"
+- name: Find OpenCode skills
+  ansible.builtin.find:
+    paths: "{{ role_path }}/files/skills"
+    file_type: directory
+    recurse: false
+  register: opencode_skills_dir
+
+- name: Ensure codex skills directory exists
   ansible.builtin.file:
-    src: "{{ item | regex_replace('/$', '') }}"
-    dest: "~/.codex/skills/{{ (item | regex_replace('/$', '')) | basename }}"
+    path: ~/.codex/skills
+    state: directory
+    mode: u=rwx,go=
+
+- name: Share OpenCode skills with Codex
+  loop: "{{ opencode_skills_dir.files }}"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "~/.codex/skills/{{ item.path | basename }}"
     state: link
     force: true
 
@@ -40,10 +53,16 @@
     state: link
     force: true
 
-- name: Share OpenCode skills with Claude
-  loop: "{{ query('fileglob', role_path ~ '/files/skills/*/') }}"
+- name: Ensure claude skills directory exists
   ansible.builtin.file:
-    src: "{{ item | regex_replace('/$', '') }}"
-    dest: "~/.claude/skills/{{ (item | regex_replace('/$', '')) | basename }}"
+    path: ~/.claude/skills
+    state: directory
+    mode: u=rwx,go=
+
+- name: Share OpenCode skills with Claude
+  loop: "{{ opencode_skills_dir.files }}"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: "~/.claude/skills/{{ item.path | basename }}"
     state: link
     force: true
