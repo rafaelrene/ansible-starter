@@ -32,7 +32,6 @@ brew_formula_packages:
   - tree-sitter-cli
   - tursodatabase/tap/turso
   - jj
-  - volta
   - withgraphite/tap/graphite
   - zsh
 
@@ -48,7 +47,6 @@ arch_packages:
   - aur/opencode-bin
   - aur/standardnotes-bin
   - aur/turso-cli-bin
-  - aur/volta-bin
   - aur/zen-browser-bin
   - core/openssh
   - extra/discord
