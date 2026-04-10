@@ -6,6 +6,7 @@ search_paths=(
   "$HOME/code/.personal"
   "$HOME/code/.sources"
   "$HOME/.config"
+  "${HOME}/.local/share"
 )
 
 if [[ $# -eq 1 ]]; then
