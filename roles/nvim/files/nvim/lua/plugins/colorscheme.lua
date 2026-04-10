@@ -5,7 +5,13 @@ return {
     name = "catppuccin",
     opts = {
       flavour = "mocha",
-      transparent_background = true, -- disables setting the background color.
+      transparent_background = true,
+      custom_highlights = function()
+        return {
+          NormalFloat = { bg = "NONE" },
+          FloatBorder = { bg = "NONE" },
+        }
+      end,
     },
   },
   {
