@@ -1,0 +1,13 @@
+---
+- name: Check if try-rs is already setup
+  register: try_rs_config_check
+  ansible.builtin.stat:
+    path: ~/.config/try-rs
+
+- name: Copy custom try-rs config
+  when: not try_rs_config_check.stat.exists
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/try-rs
+    mode: u=rwx,go=r
+    state: link
