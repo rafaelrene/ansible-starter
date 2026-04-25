@@ -1,9 +1,9 @@
 #!/bin/zsh
 # @raycast.schemaVersion 1
-# @raycast.title Nginx Proxy Manager Web App
+# @raycast.title Habitica Web App
 # @raycast.mode silent
 # @raycast.packageName Web Apps
 
 exec /Applications/Chromium.app/Contents/MacOS/Chromium \
-  --app='https://npm.ts.rafr.dev' \
+  --app='https://habitica.com/' \
   "$@"

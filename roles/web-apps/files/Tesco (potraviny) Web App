@@ -5,5 +5,5 @@
 # @raycast.packageName Web Apps
 
 exec /Applications/Chromium.app/Contents/MacOS/Chromium \
-  --app='https://potravinydomov.itesco.sk/' \
+  --app='https://potravinydomov.itesco.sk/shop/sk-SK/landing/groceries' \
   "$@"
