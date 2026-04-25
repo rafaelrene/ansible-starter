@@ -1,0 +1,13 @@
+---
+- name: Check if tealdeer is already setup
+  register: tealdeer_config_check
+  ansible.builtin.stat:
+    path: ~/.config/tealdeer
+
+- name: Copy custom tealdeer config
+  when: not tealdeer_config_check.stat.exists
+  ansible.builtin.file:
+    src: "{{ role_path }}/files"
+    dest: ~/.config/tealdeer
+    mode: u=rwx,go=r
+    state: link
