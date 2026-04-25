@@ -1,7 +1,6 @@
 ---
 brew_formula_packages:
   - fd
-  - felixkratz/formulae/sketchybar
   - go-task/tap/go-task
   - homebrew/cask/anytype
   - homebrew/cask/helium-browser
@@ -27,10 +26,9 @@ brew_formula_packages:
   - jq
   - ripgrep
   - sst/tap/opencode
-  - tldr
+  - tealdeer
   - tmux
   - tree-sitter-cli
-  - tursodatabase/tap/turso
   - jj
   - withgraphite/tap/graphite
   - zsh
@@ -46,7 +44,6 @@ arch_packages:
   - aur/onlyoffice-bin
   - aur/opencode-bin
   - aur/standardnotes-bin
-  - aur/turso-cli-bin
   - aur/zen-browser-bin
   - core/openssh
   - extra/discord
@@ -60,7 +57,7 @@ arch_packages:
   - extra/nushell
   - extra/ripgrep
   - extra/tailscale
-  - extra/tldr
+  - extra/tealdeer
   - extra/tmux
   - extra/tree-sitter-cli
   - extra/ttf-hack-nerd
