@@ -4,6 +4,7 @@ search_paths=(
   "$HOME"
   "$HOME/code"
   "$HOME/code/.personal"
+  "$HOME/code/.personal/.try"
   "$HOME/code/.sources"
   "$HOME/.config"
   "${HOME}/.local/share"

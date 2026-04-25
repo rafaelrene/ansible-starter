@@ -26,6 +26,8 @@ export EDITOR="nvim"
 export GIT_CONFIG_SYSTEM="$XDG_CONFIG_HOME/git/.gitconfig"
 export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
 export TEALDEER_CONFIG_DIR="$XDG_CONFIG_HOME/tealdeer"
+export TRY_CONFIG_DIR="$XDG_CONFIG_HOME/try-rs"
+export TRY_PATH="$HOME/code/.personal/.try"
 
 # ZSH History
 export HISTFILE="$ZSH_HOME/.zsh_history"
