@@ -19,4 +19,4 @@
 
 ## Preferences
 
-- When you need to look up how a function / library works, prefer using `repo-context` skill and `rcx` command
+- When you need to look up how a function / library works, prefer using `btca-local` skill
