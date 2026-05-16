@@ -2,11 +2,11 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = '''
-$directory(\[$git_branch(\($git_commit\))(:$git_status( | $git_state))\])
+$directory(\[$git_branch(\($git_commit\))(:$git_status( | $git_state))\])( | $jobs | )$all
 $hostname[$character](bold green)
 '''
 
-right_format = '(\($cmd_duration\))($jobs)$all'
+right_format = '(\($cmd_duration\))$time'
 
 # Inserts a blank line between shell prompts# Use custom format
 add_newline = true
@@ -64,7 +64,10 @@ style = "bg:green fg:base"
 ssh_only = true
 
 [jobs]
-format = "[$symbol$number](style)"
+format = '[j$number]($style)'
+
+[line_break]
+disabled = true
 
 [lua]
 format = '[$symbol($version)]($style)'
