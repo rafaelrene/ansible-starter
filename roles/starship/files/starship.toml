@@ -2,7 +2,7 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = '''
-$directory(\[$git_branch(\($git_commit\))(:$git_status( | $git_state))\])( | $jobs | )$all
+$directory(\[$git_branch(\($git_commit\))(:$git_status( | $git_state))\])( | $jobs)( | $all)
 $hostname[$character](bold green)
 '''
 
@@ -16,7 +16,8 @@ add_newline = true
 palette = "catppuccin_macchiato"
 
 [bun]
-format = '[$symbol($version)]($style)'
+symbol = ""
+format = '[$symbol( $version)]($style)'
 
 # Replace the '❯' symbol in the prompt with '➜'
 [character]
@@ -33,7 +34,7 @@ format = '[$symbol$environment]($style)'
 ignore_base = true
 
 [deno]
-format = '[🦕 $version](green bold)'
+format = '[$symbol( $version)]($style)'
 
 [directory]
 fish_style_pwd_dir_length = 1
@@ -73,7 +74,8 @@ disabled = true
 format = '[$symbol($version)]($style)'
 
 [nodejs]
-format = '[$symbol($version)]($style)'
+detect_files = ["package.json", ".node-version", ".nvmrc", "mise.toml"]
+format = '[$symbol( $version)]($style)'
 
 [package]
 disabled = true
