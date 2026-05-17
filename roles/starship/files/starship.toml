@@ -16,6 +16,9 @@ add_newline = true
 palette = "catppuccin_macchiato"
 
 [bun]
+detect_extensions = []
+detect_files = ["bun.lock", "bun.lockb"]
+detect_folders = []
 symbol = ""
 format = '[$symbol( $version)]($style)'
 
@@ -34,6 +37,9 @@ format = '[$symbol$environment]($style)'
 ignore_base = true
 
 [deno]
+detect_extensions = []
+detect_files = ["deno.lock", "deno.json", "deno.jsonc"]
+detect_folders = []
 format = '[$symbol( $version)]($style)'
 
 [directory]
@@ -74,7 +80,9 @@ disabled = true
 format = '[$symbol($version)]($style)'
 
 [nodejs]
-detect_files = ["package.json", ".node-version", ".nvmrc", "mise.toml"]
+detect_extensions = []
+detect_files = ["package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"]
+detect_folders = []
 format = '[$symbol( $version)]($style)'
 
 [package]
