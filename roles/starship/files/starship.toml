@@ -38,7 +38,7 @@ ignore_base = true
 
 [deno]
 detect_extensions = []
-detect_files = ["deno.lock", "deno.json", "deno.jsonc"]
+detect_files = ["deno.lock"]
 detect_folders = []
 format = '[$symbol( $version)]($style)'
 
