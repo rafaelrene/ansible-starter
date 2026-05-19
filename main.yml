@@ -13,7 +13,7 @@
     - graphite
     - starship
     - package_management
-    - opencode
+    - agents
     - raycast-scripts
     - try-rs
     - tealdeer

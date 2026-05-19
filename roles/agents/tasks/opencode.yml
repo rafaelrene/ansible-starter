@@ -1,0 +1,25 @@
+---
+- name: Ensure opencode config directory exists
+  ansible.builtin.file:
+    path: ~/.config/opencode
+    state: directory
+    mode: u=rwx,go=r
+
+- name: Discover opencode config files
+  ansible.builtin.find:
+    paths: "{{ role_path }}/files/agent_configs/opencode"
+    file_type: any
+    recurse: false
+    hidden: true
+  register: opencode_config_items
+
+- name: Symlink opencode config
+  loop: "{{ opencode_config_items.files }}"
+  loop_control:
+    loop_var: opencode_config_file
+  when: opencode_config_file.path | basename != '.DS_Store'
+  ansible.builtin.file:
+    src: "{{ opencode_config_file.path }}"
+    dest: ~/.config/opencode/{{ opencode_config_file.path | basename }}
+    state: link
+    force: true

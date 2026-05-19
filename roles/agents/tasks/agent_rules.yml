@@ -1,0 +1,28 @@
+---
+- name: Symlink AGENTS.md to OpenCode
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.config/opencode/AGENTS.md
+    state: link
+    force: true
+
+- name: Symlink AGENTS.md to Codex
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.codex/AGENTS.md
+    state: link
+    force: true
+
+- name: Symlink AGENTS.md to Claude (as CLAUDE.md)
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.claude/CLAUDE.md
+    state: link
+    force: true
+
+- name: Symlink AGENTS.md to Pi
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.config/pi/AGENTS.md
+    state: link
+    force: true

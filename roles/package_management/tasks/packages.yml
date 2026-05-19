@@ -1,13 +1,13 @@
 ---
 - name: Install Homebrew Formulae
-  when: ansible_os_family == 'Darwin'
+  when: ansible_facts['os_family'] == 'Darwin'
   community.general.homebrew:
     update_homebrew: true
     state: present
     name: "{{ brew_formula_packages }}"
 
 - name: Install Paru packages
-  when: ansible_os_family == 'Archlinux'
+  when: ansible_facts['os_family'] == 'Archlinux'
   kewlfft.aur.aur:
     use: paru
     state: present

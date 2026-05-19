@@ -1,0 +1,6 @@
+---
+- name: Ensure pi config directory exists
+  ansible.builtin.file:
+    path: ~/.config/pi
+    state: directory
+    mode: u=rwx,go=

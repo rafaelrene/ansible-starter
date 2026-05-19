@@ -1,0 +1,6 @@
+---
+- name: Ensure claude config directory exists
+  ansible.builtin.file:
+    path: ~/.claude
+    state: directory
+    mode: u=rwx,go=

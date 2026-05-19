@@ -5,11 +5,11 @@
 - In all interactions and messages, be extremely concise even if it means sacrificing grammar
 - Don't add comments unless they are necessary. If code is self-documenting, you're forbidden to add comments.
 - At the end of each interaction, if you've changed any code ensure that it's properly linted and formatted.
-- Interview me deeply about any questions you have.
+- Always interview me deeply about any questions you have until we're both on the same page.
 
 ## Git or other version control
 
-- Don't use git (or any other version control tool) without user approval. Don't commit or push unless you're explicitly asked to do so.
+- Don't commit or push unless you're explicitly instructed by a developer.
 
 ## Plans
 

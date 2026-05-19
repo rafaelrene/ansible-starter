@@ -15,10 +15,10 @@
 - name: Copy SSH keys
   when: ssh_keys_check.results | selectattr('stat.exists', 'equalto', false) | list | length > 0
   become: true
-  become_user: "{{ ansible_user_id }}"
+  become_user: "{{ ansible_facts['user_id'] }}"
   ansible.builtin.copy:
     src: "{{ role_path }}/files/"
     dest: ~/.ssh/
     mode: u+rw
     directory_mode: u+rwx
-    owner: "{{ ansible_user_id }}"
+    owner: "{{ ansible_facts['user_id'] }}"

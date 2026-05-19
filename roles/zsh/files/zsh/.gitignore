@@ -4,3 +4,4 @@
 .cache
 .zcompcache
 .zsh_sessions
+.zsh_secrets

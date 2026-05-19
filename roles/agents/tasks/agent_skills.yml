@@ -1,0 +1,63 @@
+---
+- name: Discover skills
+  ansible.builtin.find:
+    paths: "{{ role_path }}/files/skills"
+    file_type: directory
+    recurse: false
+  register: skills_dir
+
+- name: Ensure opencode skills directory exists
+  ansible.builtin.file:
+    path: ~/.config/opencode/skills
+    state: directory
+    mode: u=rwx,go=
+
+- name: Symlink skills to OpenCode
+  loop: "{{ skills_dir.files }}"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: ~/.config/opencode/skills/{{ item.path | basename }}
+    state: link
+    force: true
+
+- name: Ensure codex skills directory exists
+  ansible.builtin.file:
+    path: ~/.codex/skills
+    state: directory
+    mode: u=rwx,go=
+
+- name: Symlink skills to Codex
+  loop: "{{ skills_dir.files }}"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: ~/.codex/skills/{{ item.path | basename }}
+    state: link
+    force: true
+
+- name: Ensure claude skills directory exists
+  ansible.builtin.file:
+    path: ~/.claude/skills
+    state: directory
+    mode: u=rwx,go=
+
+- name: Symlink skills to Claude
+  loop: "{{ skills_dir.files }}"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: ~/.claude/skills/{{ item.path | basename }}
+    state: link
+    force: true
+
+- name: Ensure pi skills directory exists
+  ansible.builtin.file:
+    path: ~/.config/pi/skills
+    state: directory
+    mode: u=rwx,go=
+
+- name: Symlink skills to Pi
+  loop: "{{ skills_dir.files }}"
+  ansible.builtin.file:
+    src: "{{ item.path }}"
+    dest: ~/.config/pi/skills/{{ item.path | basename }}
+    state: link
+    force: true

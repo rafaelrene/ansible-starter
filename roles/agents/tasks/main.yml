@@ -1,0 +1,15 @@
+---
+- name: Setup agent-specific configs
+  ansible.builtin.include_tasks:
+    file: "{{ item }}"
+  loop:
+    - opencode.yml
+    - codex.yml
+    - claude.yml
+    - pi.yml
+
+- name: Distribute AGENTS.md to all agents
+  ansible.builtin.include_tasks: agent_rules.yml
+
+- name: Distribute skills to all agents
+  ansible.builtin.include_tasks: agent_skills.yml

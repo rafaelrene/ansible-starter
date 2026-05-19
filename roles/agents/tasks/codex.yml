@@ -1,0 +1,6 @@
+---
+- name: Ensure codex config directory exists
+  ansible.builtin.file:
+    path: ~/.codex
+    state: directory
+    mode: u=rwx,go=

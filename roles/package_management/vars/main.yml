@@ -1,61 +1,105 @@
 ---
 brew_formula_packages:
+  # Formulae
+  - age
+  - antidote
+  - btop
   - fd
-  - go-task/tap/go-task
-  - homebrew/cask/anytype
-  - homebrew/cask/helium-browser
-  - homebrew/cask/discord
-  - homebrew/cask/ente
-  - homebrew/cask/ente-auth
-  - homebrew/cask/font-hack-nerd-font
-  - homebrew/cask/font-jetbrains-mono
-  - homebrew/cask/font-jetbrains-mono-nerd-font
-  - homebrew/cask/ghostty
-  - homebrew/cask/mailspring
-  - homebrew/cask/onlyoffice
-  - homebrew/cask/proton-drive
-  - homebrew/cask/raycast
-  - homebrew/cask/standard-notes
-  - homebrew/cask/tailscale-app
-  - homebrew/cask/zen
-  - htop
+  - fzf
+  - jj
+  - jq
+  - lame
   - lazygit
+  - mise
+  - nasm
   - neovim
   - nushell
   - openssh
-  - jq
+  - pi-coding-agent
+  - pkgconf
   - ripgrep
+  - sops
   - sst/tap/opencode
+  - starship
   - tealdeer
   - tmux
   - tree-sitter-cli
-  - jj
+  - try-rs
+  - viu
+  - wget
   - withgraphite/tap/graphite
+  - yazi
   - zsh
+  # Casks
+  - homebrew/cask/amethyst
+  - homebrew/cask/anytype
+  - homebrew/cask/claude-code
+  - homebrew/cask/codex
+  - homebrew/cask/discord
+  - homebrew/cask/ente
+  - homebrew/cask/ente-auth
+  - homebrew/cask/filen
+  - homebrew/cask/font-hack-nerd-font
+  - homebrew/cask/font-jetbrains-mono
+  - homebrew/cask/font-jetbrains-mono-nerd-font
+  - homebrew/cask/freetube
+  - homebrew/cask/ghostty
+  - homebrew/cask/gifox
+  - homebrew/cask/google-drive
+  - homebrew/cask/helium-browser
+  - homebrew/cask/iina
+  - homebrew/cask/mailspring
+  - homebrew/cask/microsoft-teams
+  - homebrew/cask/onlyoffice
+  - homebrew/cask/proton-drive
+  - homebrew/cask/raycast
+  - homebrew/cask/shottr
+  - homebrew/cask/signal
+  - homebrew/cask/slack
+  - homebrew/cask/standard-notes
+  - homebrew/cask/superwhisper
+  - homebrew/cask/t3-code
+  - homebrew/cask/tailscale-app
+  - homebrew/cask/telegram
+  - homebrew/cask/thaw
+  - homebrew/cask/ungoogled-chromium
+  - homebrew/cask/viber
+  - homebrew/cask/whatsapp
+  - homebrew/cask/yaak
+  - homebrew/cask/zen
 
 arch_packages:
   - aur/anytype-bin
   - aur/helium-browser-bin
   - aur/ente-auth-bin
   - aur/ente-desktop-bin
-  - aur/go-task
   - aur/graphite-cli-git
   - aur/mailspring-bin
   - aur/onlyoffice-bin
   - aur/opencode-bin
+  - aur/pi-coding-agent
   - aur/standardnotes-bin
+  - aur/try-rs-bin
   - aur/zen-browser-bin
+  - aur/zsh-antidote
   - core/openssh
+  - core/pkgconf
+  - extra/age
+  - extra/btop
   - extra/discord
-  - extra/emacs
   - extra/fd
+  - extra/fzf
   - extra/ghostty
-  - extra/htop
   - extra/jq
+  - extra/lame
   - extra/lazygit
+  - extra/mise
+  - extra/nasm
   - extra/neovim
   - extra/nushell
   - extra/ripgrep
+  - extra/sops
+  - extra/starship
   - extra/tailscale
   - extra/tealdeer
   - extra/tmux
@@ -64,4 +108,7 @@ arch_packages:
   - extra/ttf-jetbrains-mono
   - extra/ttf-jetbrains-mono-nerd
   - extra/jujutsu
+  - extra/viu
+  - extra/wget
+  - extra/yazi
   - extra/zsh
