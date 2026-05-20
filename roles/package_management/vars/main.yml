@@ -71,10 +71,10 @@ brew_formula_packages:
 
 arch_packages:
   - aur/anytype-bin
-  - aur/helium-browser-bin
   - aur/ente-auth-bin
   - aur/ente-desktop-bin
   - aur/graphite-cli-git
+  - aur/helium-browser-bin
   - aur/mailspring-bin
   - aur/onlyoffice-bin
   - aur/opencode-bin
@@ -87,11 +87,13 @@ arch_packages:
   - core/pkgconf
   - extra/age
   - extra/btop
+  - extra/direnv
   - extra/discord
   - extra/fd
   - extra/fzf
   - extra/ghostty
   - extra/jq
+  - extra/jujutsu
   - extra/lame
   - extra/lazygit
   - extra/mise
@@ -108,7 +110,6 @@ arch_packages:
   - extra/ttf-hack-nerd
   - extra/ttf-jetbrains-mono
   - extra/ttf-jetbrains-mono-nerd
-  - extra/jujutsu
   - extra/viu
   - extra/wget
   - extra/yazi
