@@ -4,6 +4,7 @@ brew_formula_packages:
   - age
   - antidote
   - btop
+  - direnv
   - fd
   - fzf
   - jj
