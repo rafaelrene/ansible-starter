@@ -19,6 +19,19 @@ local function get_eslint_root(fname)
   return eslint_root(fname) or vim.fs.dirname(vim.fs.find(".git", { path = fname, upward = true })[1])
 end
 
+local function get_tsgo_root(bufnr, on_dir)
+  local root_markers = { { "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lockb", "bun.lock" }, { ".git" } }
+  local deno_root = vim.fs.root(bufnr, { "deno.json", "deno.jsonc" })
+  local deno_lock_root = vim.fs.root(bufnr, { "deno.lock" })
+  local project_root = vim.fs.root(bufnr, root_markers)
+
+  if deno_lock_root and (not deno_root or #deno_lock_root >= #deno_root) then
+    return
+  end
+
+  on_dir(project_root or vim.fn.getcwd())
+end
+
 return {
   {
     "stevearc/conform.nvim",
@@ -38,6 +51,9 @@ return {
         },
         ts_ls = {
           enable = false,
+        },
+        tsgo = {
+          root_dir = get_tsgo_root,
         },
         vtsls = {
           settings = {
