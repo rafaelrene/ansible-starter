@@ -1,1 +1,11 @@
+tries_paths = "/Users/rafael/code/.personal/.try"
+tries_path = "/Users/rafael/code/.personal/.try"
+theme = "Catppuccin Mocha"
+editor = "nvim"
 apply_date_prefix = true
+transparent_background = true
+show_disk = true
+show_preview = true
+show_legend = true
+show_right_panel = true
+right_panel_width = 25
