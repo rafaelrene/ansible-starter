@@ -4,6 +4,7 @@ brew_formula_packages:
   - age
   - antidote
   - btop
+  - cirruslabs/cli/tart
   - direnv
   - fd
   - fzf
@@ -20,6 +21,7 @@ brew_formula_packages:
   - pkgconf
   - ripgrep
   - sops
+  - sshpass
   - sst/tap/opencode
   - starship
   - tealdeer
