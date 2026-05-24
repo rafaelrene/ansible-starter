@@ -52,6 +52,7 @@ brew_formula_packages:
   - homebrew/cask/mailspring
   - homebrew/cask/microsoft-teams
   - homebrew/cask/onlyoffice
+  - homebrew/cask/orbstack
   - homebrew/cask/proton-drive
   - homebrew/cask/raycast
   - homebrew/cask/shottr
