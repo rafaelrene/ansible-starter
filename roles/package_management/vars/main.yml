@@ -26,6 +26,7 @@ brew_formula_packages:
   - starship
   - tealdeer
   - tmux
+  - tmuxpack/tpack/tpack
   - tree-sitter-cli
   - try-rs
   - viu
