@@ -34,6 +34,23 @@ end
 -- Basic normal mappings
 nmap("J", "mzJ`z", "Join lines")
 
+local tmux_navigator = require("config.tmux-navigator")
+nmap("<C-h>", function()
+  tmux_navigator.navigate("h")
+end, "Navigate Left")
+nmap("<C-j>", function()
+  tmux_navigator.navigate("j")
+end, "Navigate Down")
+nmap("<C-k>", function()
+  tmux_navigator.navigate("k")
+end, "Navigate Up")
+nmap("<C-l>", function()
+  tmux_navigator.navigate("l")
+end, "Navigate Right")
+nmap("<C-\\>", function()
+  tmux_navigator.navigate("p")
+end, "Navigate Previous")
+
 nmap("<C-d>", "<C-d>zz", "Move buffer page down")
 nmap("<C-u>", "<C-u>zz", "Move bugger page up")
 
