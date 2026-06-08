@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Review · <!-- TODO: Insert objective of changes here as title --></title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --border: #e2e4e8;
+    --text: #1a1d23;
+    --text-muted: #6b7280;
+    --concern: #e11d48;
+    --concern-bg: #fff1f2;
+    --concern-border: #fecdd3;
+    --simplify: #d97706;
+    --simplify-bg: #fffbeb;
+    --simplify-border: #fde68a;
+    --warning: #ea580c;
+    --warning-bg: #fff7ed;
+    --warning-border: #fed7aa;
+    --diff-add: #16a34a;
+    --diff-add-bg: #f0fdf4;
+    --diff-remove: #dc2626;
+    --diff-remove-bg: #fef2f2;
+    --code-bg: #f1f5f9;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .report {
+    max-width: 880px;
+    width: 100%;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .header h1 span { color: var(--text-muted); font-weight: 500; }
+  .header .meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 1rem;
+  }
+
+  /* ── Summary Bar ── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .summary-card .icon {
+    font-size: 1.3rem;
+    width: 2rem;
+    text-align: center;
+  }
+  .summary-card .count {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .summary-card .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .summary-card.concern .count { color: var(--concern); }
+  .summary-card.simplify .count { color: var(--simplify); }
+  .summary-card.warning .count { color: var(--warning); }
+  .summary-card.files .count { color: var(--text); }
+
+  /* ── File Card ── */
+  .file-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .file-card .file-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    background: #f4f6f9;
+    border-bottom: 1px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .file-card .file-heading .icon { font-size: 1.1rem; }
+
+  /* ── Section ── */
+  .section {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section:last-of-type { border-bottom: none; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+  .section-header .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    margin-left: auto;
+  }
+  .section.concern .section-header { color: var(--concern); }
+  .section.concern .badge { background: var(--concern-bg); color: var(--concern); border: 1px solid var(--concern-border); }
+  .section.simplify .section-header { color: var(--simplify); }
+  .section.simplify .badge { background: var(--simplify-bg); color: var(--simplify); border: 1px solid var(--simplify-border); }
+  .section.warning .section-header { color: var(--warning); }
+  .section.warning .badge { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+  .none-found {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 0.4rem 0;
+  }
+
+  /* ── Finding ── */
+  .finding { margin-bottom: 1rem; }
+  .finding:last-child { margin-bottom: 0; }
+  .finding-title {
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+  }
+  .finding-title .line {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-family: monospace;
+  }
+  .finding p {
+    font-size: 0.88rem;
+    color: #374151;
+    margin-bottom: 0.3rem;
+  }
+  .finding p strong { color: var(--text); }
+
+  /* ── Diff Table ── */
+  .diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Monaco', monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0.5rem 0 0.25rem;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .diff-table td {
+    padding: 0.2rem 0.6rem;
+    vertical-align: top;
+    white-space: pre;
+  }
+  .diff-table .diff-remove {
+    background: var(--diff-remove-bg);
+    color: var(--diff-remove);
+  }
+  .diff-table .diff-remove::before {
+    content: '− ';
+    opacity: 0.6;
+  }
+  .diff-table .diff-add {
+    background: var(--diff-add-bg);
+    color: var(--diff-add);
+  }
+  .diff-table .diff-add::before {
+    content: '+ ';
+    opacity: 0.6;
+  }
+  .diff-table .diff-label {
+    width: 5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    text-align: right;
+    border-right: 1px solid var(--border);
+    background: var(--code-bg);
+    padding: 0.2rem 0.6rem;
+  }
+
+  /* ── Inline code ── */
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.85em;
+    background: var(--code-bg);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+  pre {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.82rem;
+    background: var(--code-bg);
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    margin: 0.4rem 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: white; padding: 0.5in; }
+    .report { max-width: 100%; }
+    .file-card { break-inside: avoid; box-shadow: none; border-color: #ccc; }
+    .summary-card { box-shadow: none; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    body { padding: 1rem 0.5rem; }
+    .header { flex-direction: column; gap: 0.3rem; }
+    .header .meta { font-size: 0.8rem; }
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .diff-table td { white-space: normal; word-break: break-all; }
+  }
+</style>
+</head>
+<body>
+<div class="report">
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <h1>Code Review <span>·</span><!-- TODO: Insert objective of changes here as title --></h1>
+    <div class="meta">
+      <span>📅 <!-- TODO: Insert current date --></span>
+      <span>🔍 <!-- TODO: Insert number of files included in the report --></span>
+    </div>
+  </header>
+
+  <!-- ═══════════ SUMMARY ═══════════ -->
+  <div class="summary">
+    <div class="summary-card concern">
+      <div class="icon">🔴</div>
+      <div>
+        <div class="count"><!-- TODO: Insert concerns count --></div>
+        <div class="label">Concerns</div>
+      </div>
+    </div>
+    <div class="summary-card simplify">
+      <div class="icon">🟡</div>
+      <div>
+        <div class="count"><!-- TODO: Insert simplifications count --></div>
+        <div class="label">Simplifications</div>
+      </div>
+    </div>
+    <div class="summary-card warning">
+      <div class="icon">⚠️</div>
+      <div>
+        <div class="count"><!-- TODO: Insert warnings count --></div>
+        <div class="label">Warnings</div>
+      </div>
+    </div>
+    <div class="summary-card files">
+      <div class="icon">📄</div>
+      <div>
+        <div class="count"><!-- TODO: Insert files reviewed count --></div>
+        <div class="label">Files</div>
+      </div>
+    </div>
+  </div>
+
+  <!--╔════════════════════════════════════════════════════════════════════╗-->
+  <!--║  REFERENCE — FULL EXAMPLE FILE CARD                              ║-->
+  <!--║  Uncomment and adapt this structure for each file you review.    ║-->
+  <!--║  Copy the <div class="file-card"> block for each file, then      ║-->
+  <!--║  replace the content and remove the <!-- ... --> around it.      ║-->
+  <!--╚════════════════════════════════════════════════════════════════════╝-->
+  <!--
+  <div class="file-card">
+    <div class="file-heading">
+      <span class="icon">📁</span>
+      <span>src/users/service.ts</span>
+    </div>
+
+    <div class="section concern">
+      <div class="section-header">
+        🔴 Concerns
+        <span class="badge">2</span>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title">Null reference on <code>user.addresses</code> <span class="line">· L42</span></div>
+        <p><strong>Problem:</strong> <code>user.addresses</code> is accessed directly without checking if it exists. When <code>includeAddresses</code> is <code>false</code>, the field is <code>undefined</code>, causing a runtime <code>TypeError</code>.</p>
+        <p><strong>Fix:</strong> Use optional chaining and provide a fallback.</p>
+        <table class="diff-table">
+          <tr>
+            <td class="diff-label">Before</td>
+            <td class="diff-remove">user.addresses.filter(a => a.active)</td>
+          </tr>
+          <tr>
+            <td class="diff-label">After</td>
+            <td class="diff-add">(user.addresses ?? []).filter(a => a.active)</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title">Unhandled rejected promise in <code>bulkUpdate</code> <span class="line">· L78–92</span></div>
+        <p><strong>Problem:</strong> The <code>.catch()</code> on the inner <code>update</code> call logs the error but doesn't rethrow, so the outer <code>Promise.all</code> never rejects. Failed updates are silently swallowed.</p>
+        <p><strong>Fix:</strong> Rethrow after logging, or use a <code>rejectionHandler</code> that propagates.</p>
+        <table class="diff-table">
+          <tr>
+            <td class="diff-label">Before</td>
+            <td class="diff-remove">.catch(err => console.error(err))</td>
+          </tr>
+          <tr>
+            <td class="diff-label">After</td>
+            <td class="diff-add">.catch(err => { console.error(err); throw err; })</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="section simplify">
+      <div class="section-header">
+        🟡 Simplifications
+        <span class="badge">1</span>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title">Duplicated query builder pattern <span class="line">· L15–25 &amp; L34–44</span></div>
+        <p><strong>Problem:</strong> The same <code>where</code> / <code>orderBy</code> / <code>limit</code> chain repeats in <code>findActive</code> and <code>findInactive</code>. Only the filter predicate differs.</p>
+        <p><strong>Fix:</strong> Extract a shared <code>buildQuery</code> that accepts a filter function.</p>
+        <pre><code>// Shared helper
+const buildQuery = (filter: QueryFilter) =>
+  db.users
+    .where(filter)
+    .orderBy('createdAt', 'desc')
+    .limit(100);</code></pre>
+      </div>
+    </div>
+
+    <div class="section warning">
+      <div class="section-header">
+        ⚠️ Warnings
+        <span class="badge">1</span>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title">Empty <code>catch</code> block <span class="line">· L105</span></div>
+        <p><strong>Problem:</strong> The <code>catch</code> on line 105 is empty (<code>catch {}</code>). If the metric write fails, there's zero visibility.</p>
+        <p><strong>Fix:</strong> At minimum log the error, or consider removing the try-catch if the failure is truly benign.</p>
+      </div>
+    </div>
+  </div>
+  -->
+
+  <!--╔════════════════════════════════════════════════════════════════════╗-->
+  <!--║  FILE CARDS — Copy the block below for each file you review,     ║-->
+  <!--║  remove the <!-- ... --> around it, and fill in the TODOs.        ║-->
+  <!--║  Refer to the commented example above for the full format.       ║-->
+  <!--╚════════════════════════════════════════════════════════════════════╝-->
+
+  <!--
+  <div class="file-card">
+    <div class="file-heading">
+      <span class="icon">📁</span>
+      <span><!-- TODO: Insert file path --></span>
+    </div>
+
+    <div class="section concern">
+      <div class="section-header">
+        🔴 Concerns
+        <span class="badge"><!-- TODO: Insert count --></span>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title"><!-- TODO: Insert finding title --> <span class="line">· <!-- TODO: Insert line number --></span></div>
+        <p><strong>Problem:</strong> <!-- TODO: Describe the problem --></p>
+        <p><strong>Fix:</strong> <!-- TODO: Describe the fix --></p>
+        <table class="diff-table">
+          <tr>
+            <td class="diff-label">Before</td>
+            <td class="diff-remove"><!-- TODO: Insert before code --></td>
+          </tr>
+          <tr>
+            <td class="diff-label">After</td>
+            <td class="diff-add"><!-- TODO: Insert after code --></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="section simplify">
+      <div class="section-header">
+        🟡 Simplifications
+        <span class="badge"><!-- TODO: Insert count --></span>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title"><!-- TODO: Insert finding title --> <span class="line">· <!-- TODO: Insert line number --></span></div>
+        <p><strong>Problem:</strong> <!-- TODO: Describe what could be simpler --></p>
+        <p><strong>Fix:</strong> <!-- TODO: Show the simpler version --></p>
+        <pre><code><!-- TODO: Insert simpler code --></code></pre>
+      </div>
+    </div>
+
+    <div class="section warning">
+      <div class="section-header">
+        ⚠️ Warnings
+        <span class="badge"><!-- TODO: Insert count --></span>
+      </div>
+
+      <div class="finding">
+        <div class="finding-title"><!-- TODO: Insert warning title --> <span class="line">· <!-- TODO: Insert line number --></span></div>
+        <p><strong>Problem:</strong> <!-- TODO: What looks suspicious --></p>
+        <p><strong>Fix:</strong> <!-- TODO: Suggested action --></p>
+      </div>
+    </div>
+  </div>
+  -->
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <span>Generated by <strong>pi/code-review</strong></span>
+    <!-- TODO: replace reviewer / timestamp above -->
+    <span>Reviewed by <strong><!-- TODO: Insert reviewer name --></strong> · <!-- TODO: Insert timestamp --></span>
+    <span><!-- TODO: Insert optional footer note --></span>
+  </footer>
+
+</div>
+</body>
+</html>
