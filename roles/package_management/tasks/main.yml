@@ -26,5 +26,12 @@
     state: present
     name: paru-bin
 
+- name: Tap custom repositories
+  when: ansible_facts['os_family'] == 'Darwin'
+  community.general.homebrew_tap:
+    url: https://git.rafr.dev/raf/codearts-tap.git
+    name: raf/codearts-tap
+    state: present
+
 - name: Install Packages
   include_tasks: packages.yml

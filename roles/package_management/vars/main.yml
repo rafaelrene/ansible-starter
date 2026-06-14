@@ -8,6 +8,7 @@ brew_formula_packages:
   - direnv
   - fd
   - fzf
+  - git-delta
   - jj
   - jq
   - lame
@@ -37,7 +38,7 @@ brew_formula_packages:
   # Casks
   - homebrew/cask/amethyst
   - homebrew/cask/anytype
-  - homebrew/cask/claude-code
+  - homebrew/cask/claude-code@latest
   - homebrew/cask/codex
   - homebrew/cask/discord
   - homebrew/cask/ente
@@ -57,6 +58,8 @@ brew_formula_packages:
   - homebrew/cask/onlyoffice
   - homebrew/cask/orbstack
   - homebrew/cask/proton-drive
+  - homebrew/cask/proton-pass
+  - raf/codearts-tap/coppelia
   - homebrew/cask/raycast
   - homebrew/cask/shottr
   - homebrew/cask/signal
