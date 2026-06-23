@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Structured code review as a self-contained HTML report. Sections: concerns (bugs, over-engineering, violations), simplification opportunities, and warnings about unintentional or suspicious code. Use when user asks for code review, PR review, code audit, or quality assessment.
+description: "Structured code review as a self-contained HTML report. Sections: concerns (bugs, over-engineering, violations), simplification opportunities, and warnings about unintentional or suspicious code. Use when user asks for code review, PR review, code audit, or quality assessment."
 ---
 
 # Code Review
