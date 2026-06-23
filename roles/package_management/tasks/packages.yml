@@ -1,4 +1,10 @@
 ---
+- name: Tap Homebrew Taps
+  when: ansible_facts['os_family'] == 'Darwin'
+  community.general.homebrew_tap:
+    name: "{{ brew_taps }}"
+    state: present
+
 - name: Install Homebrew Formulae
   when: ansible_facts['os_family'] == 'Darwin'
   community.general.homebrew:

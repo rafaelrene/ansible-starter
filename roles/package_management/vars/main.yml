@@ -1,4 +1,9 @@
 ---
+brew_taps:
+  - sst/tap
+  - tmuxpack/tpack
+  - withgraphite/tap
+
 brew_formula_packages:
   # Formulae
   - age
