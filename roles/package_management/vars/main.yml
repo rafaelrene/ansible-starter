@@ -65,6 +65,7 @@ brew_formula_packages:
   - homebrew/cask/proton-drive
   - homebrew/cask/proton-pass
   - raf/codearts-tap/coppelia
+  - raf/codearts-tap/zentty
   - homebrew/cask/raycast
   - homebrew/cask/shottr
   - homebrew/cask/signal
