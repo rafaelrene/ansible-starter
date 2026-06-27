@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Comment Resolution - {{TIMESTAMP}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            border-bottom: 2px solid #16213e;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: #00d4ff;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .meta {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .meta span {
+            margin-right: 1.5rem;
+        }
+        
+        section {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #00d4ff;
+        }
+        
+        section.dismissed {
+            border-left-color: #ff6b6b;
+        }
+        
+        h2 {
+            color: #00d4ff;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .comment-box {
+            background: #0f0f23;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            border: 1px solid #333;
+        }
+        
+        .file-ref {
+            color: #00d4ff;
+            font-family: monospace;
+        }
+        
+        .verdict {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        
+        .verdict.accept {
+            background: #00d4ff22;
+            color: #00d4ff;
+        }
+        
+        .verdict.dismiss {
+            background: #ff6b6b22;
+            color: #ff6b6b;
+        }
+        
+        .evaluation {
+            margin-top: 1rem;
+        }
+        
+        .evaluation p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .evaluation ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .evaluation li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #252545;
+        }
+        
+        .check-item:last-child {
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #00d4ff;
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .step-details {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        code {
+            background: #0f0f23;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .files-list {
+            list-style: none;
+        }
+        
+        .files-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #252545;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .files-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .files-list li::before {
+            content: "📄 ";
+        }
+        
+        .risk-item {
+            padding: 0.75rem;
+            background: #0f0f23;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .risk-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .risk-title {
+            font-weight: bold;
+            color: #ffc107;
+            margin-bottom: 0.25rem;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #252545;
+            color: #666;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PR Comment Resolution</h1>
+        <div class="meta">
+            <span>📅 {{TIMESTAMP}}</span>
+            <span>📁 {{FILE_PATH}}</span>
+        </div>
+    </header>
+
+    <section>
+        <h2>Original Comment</h2>
+        <div class="comment-box">{{COMMENT_TEXT}}</div>
+        {{#IF LINE_NUMBER}}
+        <div class="meta" style="margin-top: 0.75rem;">
+            Line: <span class="file-ref">{{LINE_NUMBER}}</span>
+        </div>
+        {{/IF_LINE_NUMBER}}
+    </section>
+
+    <section>
+        <h2>Evaluation</h2>
+        <div class="evaluation">
+            <p><span class="verdict {{VERDICT_CLASS}}">{{VERDICT}}</span></p>
+            <p style="margin-top: 1rem;">{{EVALUATION_SUMMARY}}</p>
+            {{#IF EVALUATION_DETAILS}}
+            <ul>
+                {{EVALUATION_DETAILS}}
+            </ul>
+            {{/IF_EVALUATION_DETAILS}}
+        </div>
+    </section>
+
+    <section>
+        <h2>Resolution</h2>
+        <p>{{RESOLUTION}}</p>
+        {{#IF DISCUSSION_SUMMARY}}
+        <p style="margin-top: 1rem; color: #aaa;">{{DISCUSSION_SUMMARY}}</p>
+        {{/IF_DISCUSSION_SUMMARY}}
+    </section>
+
+    <section>
+        <h2>Implementation Plan</h2>
+        <div class="plan-steps">
+            {{PLAN_STEPS}}
+        </div>
+    </section>
+
+    <section>
+        <h2>Files Affected</h2>
+        <ul class="files-list">
+            {{FILES_AFFECTED}}
+        </ul>
+    </section>
+
+    {{#IF RISKS_CONSIDERATIONS}}
+    <section>
+        <h2>Risks & Considerations</h2>
+        {{RISKS_CONSIDERATIONS}}
+    </section>
+    {{/IF_RISKS_CONSIDERATIONS}}
+
+    <footer>
+        Generated by pr-comment-resolver skill
+    </footer>
+</body>
+</html>
