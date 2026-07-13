@@ -72,7 +72,7 @@ brew_formula_packages:
   - homebrew/cask/slack
   - homebrew/cask/standard-notes
   - homebrew/cask/superwhisper
-  - homebrew/cask/t3-code
+  - homebrew/cask/t3-code@nightly
   - homebrew/cask/tailscale-app
   - homebrew/cask/telegram
   - homebrew/cask/thaw
