@@ -8,7 +8,7 @@
     - claude.yml
     - pi.yml
 
-- name: Distribute AGENTS.md to all agents
+- name: Distribute agent rules
   ansible.builtin.include_tasks: agent_rules.yml
 
 - name: Distribute skills to all agents

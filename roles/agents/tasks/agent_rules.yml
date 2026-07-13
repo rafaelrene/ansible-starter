@@ -13,9 +13,16 @@
     state: link
     force: true
 
-- name: Symlink AGENTS.md to Claude (as CLAUDE.md)
+- name: Symlink AGENTS.md to Claude
   ansible.builtin.file:
     src: "{{ role_path }}/files/AGENTS.md"
+    dest: ~/.claude/AGENTS.md
+    state: link
+    force: true
+
+- name: Symlink CLAUDE.md to Claude
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/CLAUDE.md"
     dest: ~/.claude/CLAUDE.md
     state: link
     force: true
