@@ -13,6 +13,7 @@ window-theme = ghostty
 
 clipboard-read = allow
 clipboard-write = allow
+copy-on-select = clipboard
 clipboard-trim-trailing-spaces = true
 
 macos-option-as-alt = true 
