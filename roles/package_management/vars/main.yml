@@ -67,6 +67,7 @@ brew_formula_packages:
   - raf/codearts-tap/coppelia
   - raf/codearts-tap/zentty
   - homebrew/cask/raycast
+  - homebrew/cask/rustdesk
   - homebrew/cask/shottr
   - homebrew/cask/signal
   - homebrew/cask/slack
