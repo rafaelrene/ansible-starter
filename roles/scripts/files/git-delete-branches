@@ -1,17 +1,54 @@
 #!/usr/bin/env bash
 
-inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
+set -uo pipefail
 
-if [ "$inside_git_repo" != "true" ]; then
+if [[ $(git rev-parse --is-inside-work-tree 2>/dev/null) != "true" ]]; then
 	echo "Not in a git repo!"
 	exit 0
 fi
 
-branches=$(git branch -l | awk '!/\*/ {print}')
+repo_root=$(git rev-parse --show-toplevel)
+main_worktree=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
 
-if [ ${#branches} -eq 0 ]; then
-	echo "No local branches to delete!"
-	exit 0
+if [[ $repo_root != "$main_worktree" ]]; then
+	echo "git-delete-branches must be run from the main worktree" >&2
+	exit 1
 fi
 
-git branch -D $branches
+current_branch=$(git branch --show-current)
+branches_to_delete=()
+worktree_branches=()
+worktree_paths=()
+
+while IFS=$'\t' read -r branch worktree_path; do
+	if [[ $branch == "$current_branch" ]]; then
+		continue
+	fi
+
+	if [[ -n $worktree_path ]]; then
+		worktree_branches+=("$branch")
+		worktree_paths+=("$worktree_path")
+		continue
+	fi
+
+	branches_to_delete+=("$branch")
+done < <(git branch --format=$'%(refname:short)\t%(worktreepath)')
+
+if [[ ${#branches_to_delete[@]} -gt 0 ]]; then
+	git branch -D -- "${branches_to_delete[@]}"
+elif [[ ${#worktree_branches[@]} -eq 0 ]]; then
+	echo "No local branches to delete!"
+fi
+
+for index in "${!worktree_branches[@]}"; do
+	branch=${worktree_branches[$index]}
+	worktree_path=${worktree_paths[$index]}
+
+	printf '\nBranch %q is checked out at %q:\n' "$branch" "$worktree_path"
+	printf '  Keep worktree: git -C %q switch --detach && git -C %q branch -D -- %q\n' \
+		"$worktree_path" "$worktree_path" "$branch"
+	printf '  Remove worktree: git worktree remove -- %q && git branch -D -- %q\n' \
+		"$worktree_path" "$branch"
+	printf '  Force remove (destructive): git worktree remove --force -- %q && git branch -D -- %q\n' \
+		"$worktree_path" "$branch"
+done
