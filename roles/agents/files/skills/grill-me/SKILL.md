@@ -12,13 +12,5 @@ Ask the questions one at a time.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
 
-Once shared understanding is reached, spawn adversarial sub-agent
-reviewer that will double check the plan and provide feedback.
-Provide feedback in the form of another grill-me session until all
-points are addressed and plan is approved.
-Reviewer sub-agent must be a flagship model of other company.
-Use claude when main agent is from openai and vice versa.
-High reasoning, fast mode disabled.
-
 Don't jump to the implementation by yourself.
 Always present the plan first and wait for my confirmation.
