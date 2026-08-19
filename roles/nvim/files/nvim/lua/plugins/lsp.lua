@@ -53,6 +53,8 @@ return {
           enable = false,
         },
         tsgo = {
+          -- Our custom root_dir bypasses lspconfig's tsc/tsgo binary detection.
+          cmd = { "tsgo", "--lsp", "--stdio" },
           root_dir = get_tsgo_root,
         },
         vtsls = {
