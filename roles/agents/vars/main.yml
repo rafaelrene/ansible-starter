@@ -1,0 +1,8 @@
+---
+# Every agent that gets the shared skills. Used to distribute skills and to
+# prune links whose source skill is gone.
+agents_skill_dirs:
+  - ~/.config/opencode/skills
+  - ~/.codex/skills
+  - ~/.claude/skills
+  - ~/.config/pi/skills

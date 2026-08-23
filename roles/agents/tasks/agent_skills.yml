@@ -4,60 +4,52 @@
     paths: "{{ role_path }}/files/skills"
     file_type: directory
     recurse: false
-  register: skills_dir
+  register: agents_skills
 
-- name: Ensure opencode skills directory exists
+- name: Ensure skill directories exist
+  loop: "{{ agents_skill_dirs }}"
   ansible.builtin.file:
-    path: ~/.config/opencode/skills
+    path: "{{ item }}"
     state: directory
     mode: u=rwx,go=
 
-- name: Symlink skills to OpenCode
-  loop: "{{ skills_dir.files }}"
-  ansible.builtin.file:
-    src: "{{ item.path }}"
-    dest: ~/.config/opencode/skills/{{ item.path | basename }}
-    state: link
-    force: true
+# Distribution only ever adds links, so deleting a skill from files/skills
+# leaves a dangling link in every agent. The next three tasks find each link,
+# resolve its target, and drop the ones pointing at nothing, so every
+# destination heals itself on the next run.
+- name: Find distributed skill links
+  loop: "{{ agents_skill_dirs }}"
+  ansible.builtin.find:
+    paths: "{{ item }}"
+    file_type: link
+    recurse: false
+  register: agents_skill_links
 
-- name: Ensure codex skills directory exists
-  ansible.builtin.file:
-    path: ~/.codex/skills
-    state: directory
-    mode: u=rwx,go=
+- name: Resolve skill link targets
+  loop: "{{ agents_skill_links.results | map(attribute='files') | flatten }}"
+  loop_control:
+    label: "{{ item.path }}"
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+    follow: true
+  register: agents_skill_link_targets
 
-- name: Symlink skills to Codex
-  loop: "{{ skills_dir.files }}"
+- name: Prune dangling skill links
+  loop: >-
+    {{ agents_skill_link_targets.results | default([])
+       | rejectattr('stat.exists') | list }}
+  loop_control:
+    label: "{{ item.item.path }}"
   ansible.builtin.file:
-    src: "{{ item.path }}"
-    dest: ~/.codex/skills/{{ item.path | basename }}
-    state: link
-    force: true
+    path: "{{ item.item.path }}"
+    state: absent
 
-- name: Ensure claude skills directory exists
+- name: Symlink skills to all agents
+  loop: "{{ agents_skills.files | product(agents_skill_dirs) | list }}"
+  loop_control:
+    label: "{{ item.1 }}/{{ item.0.path | basename }}"
   ansible.builtin.file:
-    path: ~/.claude/skills
-    state: directory
-    mode: u=rwx,go=
-
-- name: Symlink skills to Claude
-  loop: "{{ skills_dir.files }}"
-  ansible.builtin.file:
-    src: "{{ item.path }}"
-    dest: ~/.claude/skills/{{ item.path | basename }}
-    state: link
-    force: true
-
-- name: Ensure pi skills directory exists
-  ansible.builtin.file:
-    path: ~/.config/pi/skills
-    state: directory
-    mode: u=rwx,go=
-
-- name: Symlink skills to Pi
-  loop: "{{ skills_dir.files }}"
-  ansible.builtin.file:
-    src: "{{ item.path }}"
-    dest: ~/.config/pi/skills/{{ item.path | basename }}
+    src: "{{ item.0.path }}"
+    dest: "{{ item.1 }}/{{ item.0.path | basename }}"
     state: link
     force: true
