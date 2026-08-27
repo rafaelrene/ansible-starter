@@ -141,6 +141,11 @@ On success, return only the clickable published-plan link. Do not include a Mark
 On a second failure, preserve the temporary HTML file and report:
 
 - The publication error.
+- Why publication failed, based on the command output.
+- How to fix the failure, with concrete next steps.
 - The absolute local path to the generated plan.
+
+If the command output does not reveal the cause, say that the cause is unknown and
+report the specific diagnostic or user action needed to identify it. Do not guess.
 
 Never claim publication succeeded without a returned link.
