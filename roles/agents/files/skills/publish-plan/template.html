@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <title>{{TITLE}} - Final plan</title>
+
+    <style>
+      :root {
+        color-scheme: dark;
+        --background: #000;
+        --surface: #09090b;
+        --surface-raised: #111114;
+        --border: #27272a;
+        --text: #f4f4f5;
+        --muted: #a1a1aa;
+        --dim: #71717a;
+        --accent: #8b5cf6;
+        --accent-light: #a78bfa;
+        --info-background: #172554;
+        --info-border: #3b82f6;
+        --info-text: #dbeafe;
+        --warning-background: #7c2d12;
+        --warning-border: #fb923c;
+        --warning-text: #fff7ed;
+        --danger-background: #7f1d1d;
+        --danger-border: #ef4444;
+        --danger-text: #fef2f2;
+        --section-label-width: 180px;
+        --section-gap: 32px;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--background);
+      }
+
+      body {
+        margin: 0;
+        overflow-wrap: anywhere;
+        background: var(--background);
+        color: var(--text);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      a {
+        color: var(--accent-light);
+        text-underline-offset: 0.2em;
+      }
+
+      a:hover {
+        color: var(--text);
+      }
+
+      img,
+      svg {
+        max-width: 100%;
+      }
+
+      .page {
+        width: 100%;
+        padding: 16px 24px 0;
+      }
+
+      .hero {
+        padding: 8px 0 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .eyebrow {
+        margin: 0 0 4px;
+        color: var(--accent-light);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        line-height: 1.3;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-top: 0;
+        letter-spacing: -0.035em;
+        line-height: 1.08;
+      }
+
+      h1 {
+        margin: 0 0 6px;
+        font-size: clamp(36px, 4vw, 52px);
+        font-weight: 640;
+        line-height: 1;
+      }
+
+      h2 {
+        margin-bottom: 0;
+        font-size: clamp(21px, 2vw, 28px);
+      }
+
+      h3 {
+        margin-bottom: 0.6rem;
+        font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+      }
+
+      p {
+        margin: 0;
+      }
+
+      p + p {
+        margin-top: 1rem;
+      }
+
+      ul,
+      ol {
+        margin: 0.65rem 0 0;
+        padding-left: 1.25rem;
+      }
+
+      li + li {
+        margin-top: 0.35rem;
+      }
+
+      .lede {
+        max-width: none;
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.4;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 28px;
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+      }
+
+      .meta div {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .meta dt {
+        margin: 0;
+        color: var(--dim);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .meta dd {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .plan-section {
+        display: grid;
+        grid-template-columns: var(--section-label-width) minmax(0, 1fr);
+        gap: var(--section-gap);
+        padding: 28px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .plan-section > * {
+        min-width: 0;
+      }
+
+      .section-index {
+        margin: 0 0 4px;
+        color: var(--accent);
+        font: 700 0.72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+        letter-spacing: 0.1em;
+      }
+
+      .prose {
+        max-width: 78ch;
+        color: var(--muted);
+        font-size: clamp(1rem, 1.2vw, 1.15rem);
+      }
+
+      .outcome-grid {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(min(100%, 17rem), 1fr)
+        );
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .outcome {
+        min-width: 0;
+        padding: 14px 18px;
+        border-right: 1px solid var(--border);
+      }
+
+      .outcome:first-child {
+        padding-left: 0;
+      }
+
+      .outcome:last-child {
+        padding-right: 0;
+        border-right: 0;
+      }
+
+      .outcome strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      .outcome p {
+        color: var(--muted);
+      }
+
+      .steps {
+        counter-reset: step;
+      }
+
+      .step {
+        display: block;
+        padding: 18px 0;
+        border-top: 1px solid var(--border);
+        counter-increment: step;
+      }
+
+      .step:last-child {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .step-number {
+        display: block;
+        margin: 0 0 6px;
+      }
+
+      .step-number::before {
+        color: var(--accent);
+        content: counter(step, decimal-leading-zero);
+        font: 600 0.8rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .step-copy > p {
+        max-width: 78ch;
+        color: var(--muted);
+      }
+
+      code {
+        padding: 0.1rem 0.3rem;
+        border: 1px solid var(--border);
+        border-radius: 0.25rem;
+        background: var(--surface-raised);
+        color: #e4e4e7;
+        font: 0.88em/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .code-block {
+        overflow: hidden;
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: #070709;
+      }
+
+      .code-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.5rem 1rem;
+        padding: 0.65rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--dim);
+        font: 600 0.72rem/1.3 ui-monospace, SFMono-Regular, Consolas,
+          monospace;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 0;
+        padding: 1.1rem;
+        color: #d4d4d8;
+        font: 0.83rem/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+        tab-size: 2;
+      }
+
+      pre code {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
+
+      .diff-add {
+        color: #86efac;
+      }
+
+      .diff-remove {
+        color: #fca5a5;
+      }
+
+      .callout {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid;
+        border-radius: 0.5rem;
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 0.3rem;
+      }
+
+      .callout.info {
+        border-color: var(--info-border);
+        background: var(--info-background);
+        color: var(--info-text);
+      }
+
+      .callout.warning {
+        border-color: var(--warning-border);
+        background: var(--warning-background);
+        color: var(--warning-text);
+      }
+
+      .callout.danger {
+        border-color: var(--danger-border);
+        background: var(--danger-background);
+        color: var(--danger-text);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        font-size: 0.9rem;
+      }
+
+      th,
+      td {
+        padding: 0.7rem 0.85rem;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--text);
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      td {
+        color: var(--muted);
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .progress {
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .progress button {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--accent-light);
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .progress button:hover {
+        color: var(--text);
+      }
+
+      .verification-grid {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(min(100%, 24rem), 1fr)
+        );
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .verify-group {
+        min-width: 0;
+        padding: 14px 18px;
+        border-right: 1px solid var(--border);
+      }
+
+      .verify-group:first-child {
+        padding-left: 0;
+      }
+
+      .verify-group:last-child {
+        padding-right: 0;
+        border-right: 0;
+      }
+
+      .verify-group ul {
+        color: var(--muted);
+      }
+
+      .manual-list {
+        display: grid;
+        gap: 0.65rem;
+        margin-top: 0.65rem;
+      }
+
+      .manual-task {
+        display: grid;
+        grid-template-columns: 1.1rem minmax(0, 1fr);
+        gap: 0.75rem;
+        cursor: pointer;
+      }
+
+      .manual-task input {
+        width: 1rem;
+        height: 1rem;
+        margin: 0.28rem 0 0;
+        accent-color: var(--accent);
+      }
+
+      .manual-task:has(input:checked) span {
+        color: var(--dim);
+        text-decoration: line-through;
+      }
+
+      .after-launch {
+        color: var(--muted);
+      }
+
+      @media (max-width: 760px) {
+        .page {
+          padding: 12px 16px 0;
+        }
+
+        .hero {
+          padding: 4px 0 14px;
+        }
+
+        h1 {
+          font-size: clamp(32px, 10vw, 42px);
+        }
+
+        .meta {
+          gap: 8px 18px;
+        }
+
+        .plan-section {
+          grid-template-columns: 1fr;
+          gap: 14px;
+          padding: 24px 0;
+        }
+
+        .outcome-grid,
+        .verification-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .outcome,
+        .verify-group,
+        .outcome:first-child,
+        .outcome:last-child,
+        .verify-group:first-child,
+        .verify-group:last-child {
+          padding: 14px 0;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .outcome:last-child,
+        .verify-group:last-child {
+          border-bottom: 0;
+        }
+
+        .step {
+          padding: 16px 0;
+        }
+
+        pre {
+          padding: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body data-plan-id="{{PLAN_ID}}">
+    <div class="page">
+      <header class="hero">
+        <p class="eyebrow">Final implementation plan</p>
+        <h1>{{TITLE}}</h1>
+        <p class="lede">{{DESCRIPTION}}</p>
+
+        <dl class="meta">
+          <div>
+            <dt>Status</dt>
+            <dd>Ready to implement</dd>
+          </div>
+          <div>
+            <dt>Project</dt>
+            <dd>{{PROJECT}}</dd>
+          </div>
+          <div>
+            <dt>Confirmed</dt>
+            <dd>{{CONFIRMED_DATE}}</dd>
+          </div>
+        </dl>
+      </header>
+
+      <main>
+        <section class="plan-section" aria-labelledby="why-this-change">
+          <div>
+            <p class="section-index">01</p>
+            <h2 id="why-this-change">Why this change</h2>
+          </div>
+
+          <div class="prose">
+            {{WHY_THIS_CHANGE_HTML}}
+          </div>
+        </section>
+
+        <section class="plan-section" aria-labelledby="desired-outcome">
+          <div>
+            <p class="section-index">02</p>
+            <h2 id="desired-outcome">Desired outcome</h2>
+          </div>
+
+          <div class="outcome-grid">
+            <!-- TEMPLATE: Duplicate this article for each outcome. -->
+            <article class="outcome">
+              <strong>{{OUTCOME_TITLE}}</strong>
+              <p>{{OUTCOME_DESCRIPTION}}</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="plan-section" aria-labelledby="implementation-plan">
+          <div>
+            <p class="section-index">03</p>
+            <h2 id="implementation-plan">Implementation plan</h2>
+          </div>
+
+          <div class="steps">
+            <!-- TEMPLATE: Duplicate this article for each implementation step. -->
+            <article class="step">
+              <div class="step-number" aria-hidden="true"></div>
+              <div class="step-copy">
+                <h3>{{STEP_TITLE}}</h3>
+                {{STEP_CONTENT_HTML}}
+
+                <!-- TEMPLATE: Optional code example. Remove when unused. -->
+                <div class="code-block">
+                  <div class="code-header">
+                    <span>{{CODE_LOCATION}}</span>
+                    <span>{{EXACT_CODE_OR_PSEUDO_CODE_OR_PSEUDO_DIFF}}</span>
+                  </div>
+                  <pre><code>{{CODE_EXAMPLE}}</code></pre>
+                </div>
+
+                <!-- TEMPLATE: Optional callout. Use info, warning, or danger. -->
+                <div class="callout info">
+                  <strong>{{CALLOUT_TITLE}}</strong>
+                  {{CALLOUT_CONTENT}}
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="plan-section" aria-labelledby="verification">
+          <div>
+            <p class="section-index">04</p>
+            <h2 id="verification">Verification</h2>
+          </div>
+
+          <div>
+            <div class="progress" data-progress hidden>
+              <span data-progress-label></span>
+              <button type="button" data-reset>Reset progress</button>
+            </div>
+
+            <div class="verification-grid">
+              <article class="verify-group">
+                <h3>Agent checks</h3>
+                <ul>
+                  <li>{{AGENT_CHECK}}</li>
+                </ul>
+              </article>
+
+              <!-- TEMPLATE: Remove this article when no manual checks exist. -->
+              <article class="verify-group">
+                <h3>Manual checks</h3>
+                <div class="manual-list">
+                  <!-- TEMPLATE: Duplicate this label for each manual check. -->
+                  <label class="manual-task">
+                    <input
+                      type="checkbox"
+                      data-check-id="{{STABLE_MANUAL_CHECK_ID}}"
+                    />
+                    <span>{{MANUAL_CHECK}}</span>
+                  </label>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="plan-section" aria-labelledby="after-launch">
+          <div>
+            <p class="section-index">05</p>
+            <h2 id="after-launch">After launch</h2>
+          </div>
+
+          <div class="after-launch">
+            {{AFTER_LAUNCH_HTML}}
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        const checks = [
+          ...document.querySelectorAll(
+            'input[type="checkbox"][data-check-id]',
+          ),
+        ];
+        const progress = document.querySelector("[data-progress]");
+        const progressLabel = document.querySelector(
+          "[data-progress-label]",
+        );
+        const resetButton = document.querySelector("[data-reset]");
+
+        if (checks.length === 0) {
+          progress?.setAttribute("hidden", "");
+          return;
+        }
+
+        progress?.removeAttribute("hidden");
+
+        const planId = document.body.dataset.planId;
+        const storageKey = `published-plan:v1:${planId}`;
+
+        const readState = () => {
+          try {
+            return JSON.parse(localStorage.getItem(storageKey) || "{}");
+          } catch {
+            return {};
+          }
+        };
+
+        const writeState = () => {
+          const state = Object.fromEntries(
+            checks.map((check) => [check.dataset.checkId, check.checked]),
+          );
+
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+          } catch {
+            // Checkbox interaction still works when browser storage is blocked.
+          }
+        };
+
+        const renderProgress = () => {
+          if (!progressLabel) {
+            return;
+          }
+
+          const complete = checks.filter((check) => check.checked).length;
+          const noun = checks.length === 1 ? "check" : "checks";
+          progressLabel.textContent = `${complete} of ${checks.length} manual ${noun} complete`;
+        };
+
+        const savedState = readState();
+
+        for (const check of checks) {
+          check.checked = savedState[check.dataset.checkId] === true;
+          check.addEventListener("change", () => {
+            writeState();
+            renderProgress();
+          });
+        }
+
+        resetButton?.addEventListener("click", () => {
+          if (!confirm("Reset all saved progress for this plan?")) {
+            return;
+          }
+
+          try {
+            localStorage.removeItem(storageKey);
+          } catch {
+            // Continue by clearing the visible checkbox state.
+          }
+
+          for (const check of checks) {
+            check.checked = false;
+          }
+
+          renderProgress();
+        });
+
+        renderProgress();
+      })();
+    </script>
+  </body>
+</html>
