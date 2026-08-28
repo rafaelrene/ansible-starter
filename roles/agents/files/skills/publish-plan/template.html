@@ -454,6 +454,65 @@
         text-decoration: line-through;
       }
 
+      .history-list {
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .history-entry {
+        padding: 18px 0;
+      }
+
+      .history-entry + .history-entry {
+        border-top: 1px solid var(--border);
+      }
+
+      .history-entry-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px 24px;
+      }
+
+      .history-entry-header h3 {
+        margin: 0;
+      }
+
+      .history-entry-header time {
+        color: var(--dim);
+        font:
+          600 0.75rem/1.4 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+      }
+
+      .history-detail {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+        gap: 12px 28px;
+        margin-top: 12px;
+      }
+
+      .history-block {
+        min-width: 0;
+      }
+
+      .history-block strong {
+        display: block;
+        margin-bottom: 0.4rem;
+      }
+
+      .history-block p,
+      .history-block ul,
+      .history-unavailable {
+        color: var(--muted);
+      }
+
+      .history-unavailable {
+        margin-top: 12px;
+      }
+
       .after-launch {
         color: var(--muted);
       }
@@ -506,6 +565,16 @@
           padding: 16px 0;
         }
 
+        .history-entry {
+          padding: 16px 0;
+        }
+
+        .history-entry-header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 4px;
+        }
+
         pre {
           padding: 0.9rem;
         }
@@ -530,8 +599,20 @@
             <dd>{{PROJECT}}</dd>
           </div>
           <div>
-            <dt>Confirmed</dt>
-            <dd>{{CONFIRMED_DATE}}</dd>
+            <dt>Version</dt>
+            <dd>v{{VERSION}}</dd>
+          </div>
+          <div>
+            <dt>Created At</dt>
+            <dd>
+              <time datetime="{{CREATED_AT_ISO}}">{{CREATED_AT}}</time>
+            </dd>
+          </div>
+          <div>
+            <dt>Updated At</dt>
+            <dd>
+              <time datetime="{{UPDATED_AT_ISO}}">{{UPDATED_AT}}</time>
+            </dd>
           </div>
         </dl>
       </header>
@@ -634,9 +715,55 @@
           </div>
         </section>
 
-        <section class="plan-section" aria-labelledby="after-launch">
+        <!-- TEMPLATE: Remove this section on v1 and renumber After launch to 05. -->
+        <section class="plan-section" aria-labelledby="change-history">
           <div>
             <p class="section-index">05</p>
+            <h2 id="change-history">Change history</h2>
+          </div>
+
+          <div class="history-list">
+            <!-- TEMPLATE: Duplicate this article for each revision, newest first. -->
+            <article class="history-entry">
+              <header class="history-entry-header">
+                <h3>
+                  <a href="{{HISTORY_VERSION_URL}}">v{{HISTORY_VERSION}}</a>
+                </h3>
+                <time datetime="{{HISTORY_TIMESTAMP_ISO}}">
+                  {{HISTORY_TIMESTAMP}}
+                </time>
+              </header>
+
+              <div class="history-detail">
+                <div class="history-block">
+                  <strong>What changed</strong>
+                  <ul>
+                    <li>{{HISTORY_CHANGE}}</li>
+                  </ul>
+                </div>
+                <div class="history-block">
+                  <strong>Why</strong>
+                  <p>{{HISTORY_RATIONALE}}</p>
+                </div>
+              </div>
+            </article>
+
+            <!-- TEMPLATE: Keep this article only for untracked legacy versions. -->
+            <article class="history-entry">
+              <header class="history-entry-header">
+                <h3>Versions 2–{{LEGACY_HISTORY_LAST_VERSION}}</h3>
+              </header>
+              <p class="history-unavailable">
+                History unavailable because this plan predates revision
+                tracking.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="plan-section" aria-labelledby="after-launch">
+          <div>
+            <p class="section-index">06</p>
             <h2 id="after-launch">After launch</h2>
           </div>
 
