@@ -1,0 +1,3 @@
+- [x] Instead of having `create-web-app` as raycast script, migrate it to agent skill instead
+- [ ] Clean up `zsh` role
+- [ ] Launch `nushell` from zsh
