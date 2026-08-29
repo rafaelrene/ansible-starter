@@ -190,10 +190,9 @@ Keep the output self-contained:
 Keep the template's visual system and embedded JavaScript unchanged. Do not
 invent a new theme for each plan.
 
-The layout uses one fixed alignment line for the primary content in every
-section. Plain prose, the first outcome, step titles, verification content, and
-the first history entry must begin on that line. Internal padding is reserved
-for secondary content such as code blocks and callouts.
+Stack each section heading above its content with 16px of separation. Keep the
+page full-width and preserve the inner layouts for outcomes, steps,
+verification, history, tables, code blocks, and callouts.
 
 Use information, warning, and danger callouts only when the plan contains
 information deserving that weight.
@@ -216,7 +215,7 @@ Do not publish until all checks pass:
 - The HTML, CSS, and JavaScript are self-contained.
 - The page has no horizontal overflow on a narrow viewport.
 - The embedded JavaScript has no known runtime errors.
-- The primary content alignment remains consistent across sections.
+- Every section heading appears above its content with the expected spacing.
 
 Render the file with an available browser preview and inspect desktop and narrow
 layouts. If browser preview is unavailable, run the deterministic structural
