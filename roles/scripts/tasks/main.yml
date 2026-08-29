@@ -137,7 +137,7 @@
   loop: "{{ scripts_role_definitions }}"
   when:
     - item.platforms | length > 0
-    - ansible_system in item.platforms
+    - ansible_facts['system'] in item.platforms
 
 - name: Initialize desired script links
   ansible.builtin.set_fact:
@@ -172,7 +172,7 @@
 
 - name: Inspect desired script destinations
   ansible.builtin.stat:
-    path: "{{ ansible_env.HOME }}/.local/bin/{{ item.name }}"
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/bin/{{ item.name }}"
     follow: false
   loop: "{{ scripts_role_links }}"
   register: scripts_role_destinations
@@ -187,7 +187,8 @@
         (item.stat.islnk and item.stat.lnk_source == item.item.source)
     fail_msg: >-
       Refusing to replace {{ item.item.name }} because
-      {{ ansible_env.HOME }}/.local/bin/{{ item.item.name }} is not owned by
+      {{ ansible_facts['env']['HOME'] }}/.local/bin/{{ item.item.name }} is
+      not owned by
       the scripts role
   loop: "{{ scripts_role_destinations.results }}"
   loop_control:
@@ -195,7 +196,7 @@
 
 - name: Find installed script symlinks
   ansible.builtin.find:
-    paths: "{{ ansible_env.HOME }}/.local/bin"
+    paths: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
     file_type: link
     recurse: false
   register: scripts_role_installed_links
@@ -212,7 +213,7 @@
 
 - name: Create user-local scripts folder
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.local/bin"
+    path: "{{ ansible_facts['env']['HOME'] }}/.local/bin"
     state: directory
     mode: u=rwx,go=rx
 
@@ -234,7 +235,7 @@
 - name: Install scripts and aliases
   ansible.builtin.file:
     src: "{{ item.source }}"
-    dest: "{{ ansible_env.HOME }}/.local/bin/{{ item.name }}"
+    dest: "{{ ansible_facts['env']['HOME'] }}/.local/bin/{{ item.name }}"
     state: link
   loop: "{{ scripts_role_links }}"
   loop_control:
@@ -242,10 +243,10 @@
 
 - name: Remove obsolete scripts config link
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.config/.scripts"
+    path: "{{ ansible_facts['env']['HOME'] }}/.config/.scripts"
     state: absent
 
 - name: Remove obsolete user scripts folder
   ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/.bin"
+    path: "{{ ansible_facts['env']['HOME'] }}/.bin"
     state: absent
