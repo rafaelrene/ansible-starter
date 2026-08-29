@@ -1,9 +1,9 @@
 ---
-brew_taps:
+package_management_brew_taps:
   - sst/tap
   - withgraphite/tap
 
-brew_formula_packages:
+package_management_brew_formula_packages:
   # Formulae
   - age
   - antidote
@@ -80,7 +80,7 @@ brew_formula_packages:
   - homebrew/cask/yaak
   - homebrew/cask/zen
 
-arch_packages:
+package_management_arch_packages:
   - aur/anytype-bin
   - aur/ente-auth-bin
   - aur/ente-desktop-bin

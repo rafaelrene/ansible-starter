@@ -2,7 +2,7 @@
 - name: Tap Homebrew Taps
   when: ansible_facts['os_family'] == 'Darwin'
   community.general.homebrew_tap:
-    name: "{{ brew_taps }}"
+    name: "{{ package_management_brew_taps }}"
     state: present
 
 - name: Install Homebrew Formulae
@@ -10,11 +10,11 @@
   community.general.homebrew:
     update_homebrew: true
     state: present
-    name: "{{ brew_formula_packages }}"
+    name: "{{ package_management_brew_formula_packages }}"
 
 - name: Install Paru packages
   when: ansible_facts['os_family'] == 'Archlinux'
   kewlfft.aur.aur:
     use: paru
     state: present
-    name: "{{ arch_packages }}"
+    name: "{{ package_management_arch_packages }}"
