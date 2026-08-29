@@ -1,7 +1,6 @@
 ---
 brew_taps:
   - sst/tap
-  - tmuxpack/tpack
   - withgraphite/tap
 
 brew_formula_packages:
@@ -31,8 +30,6 @@ brew_formula_packages:
   - sst/tap/opencode
   - starship
   - tealdeer
-  - tmux
-  - tmuxpack/tpack/tpack
   - tree-sitter-cli
   - try-rs
   - viu
@@ -119,7 +116,6 @@ arch_packages:
   - extra/starship
   - extra/tailscale
   - extra/tealdeer
-  - extra/tmux
   - extra/tree-sitter-cli
   - extra/ttf-hack-nerd
   - extra/ttf-jetbrains-mono

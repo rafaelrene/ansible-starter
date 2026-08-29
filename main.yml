@@ -6,7 +6,6 @@
     - ssh
     - zsh
     - nushell
-    - tmux
     - nvim
     - scripts
     - ghostty

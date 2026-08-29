@@ -6,18 +6,15 @@
     mode: u=rwx,go=r
     state: link
 
-- name: Setup home ".bin" folder for globally accessible scripts for current user
+- name: Setup user scripts folder
   ansible.builtin.file:
     path: ~/.bin
     state: directory
     mode: u=rwx,go=r
 
 - name: Setup global symlinks for scripts
-  loop:
-    - { name: git-delete-branches, as: gdb }
-    - { name: switch-to-subrepo, as: sts }
   ansible.builtin.file:
-    src: "{{ role_path }}/files/{{ item.name }}"
-    dest: "~/.bin/{{ item.as }}"
+    src: "{{ role_path }}/files/git-delete-branches"
+    dest: ~/.bin/gdb
     mode: u=rwx,go=r
     state: link
