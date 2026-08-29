@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# scripts.platforms: Darwin
+
+set -euo pipefail
+
+search_paths=(
+	"$HOME"
+	"$HOME/code"
+	"$HOME/code/.personal"
+	"$HOME/code/.personal/.try"
+	"$HOME/code/.sources"
+	"$HOME/.config"
+	"$HOME/.local/share"
+)
+
+die() {
+	printf 'zentty-project: %s\n' "$1" >&2
+	exit 1
+}
+
+canonical_directory() {
+	(
+		cd -P -- "$1" 2>/dev/null
+		pwd
+	)
+}
+
+require_command() {
+	command -v "$1" >/dev/null 2>&1 || die "missing dependency: $1"
+}
+
+focus_pane() {
+	local window_id=$1
+	local worklane_id=$2
+	local pane_id=$3
+	local pane_token=$4
+
+	zentty pane focus \
+		--window-id "$window_id" \
+		--worklane-id "$worklane_id" \
+		--pane-id "$pane_id" \
+		--pane-token "$pane_token"
+}
+
+[[ -n ${ZENTTY_INSTANCE_SOCKET:-} ]] || die "must be run inside a Zentty pane"
+[[ $# -le 1 ]] || die "usage: zentty-project [directory]"
+
+for dependency in zentty fzf jq; do
+	require_command "$dependency"
+done
+
+if [[ $# -eq 1 ]]; then
+	selected=$(canonical_directory "$1") || die "not a directory: $1"
+else
+	candidates=()
+	for search_path in "${search_paths[@]}"; do
+		[[ -d $search_path ]] || continue
+		while IFS= read -r candidate; do
+			canonical=$(canonical_directory "$candidate") || continue
+			candidates+=("$canonical")
+		done < <(find -L "$search_path" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
+	done
+
+	((${#candidates[@]} > 0)) || die "no project directories found"
+	selected=$(printf '%s\n' "${candidates[@]}" | sort -u | fzf) || exit 0
+	[[ -n $selected ]] || exit 0
+fi
+
+panes=$(zentty list panes --include-control-token --json)
+while IFS=$'\t' read -r window_id worklane_id pane_id pane_token working_directory; do
+	[[ -n $working_directory ]] || continue
+	canonical=$(canonical_directory "$working_directory") || continue
+	if [[ $canonical == "$selected" ]]; then
+		[[ -n $pane_token ]] || die "matching pane did not provide a control token"
+		focus_pane "$window_id" "$worklane_id" "$pane_id" "$pane_token"
+		exit 0
+	fi
+done < <(
+	jq -r '.[] | [.windowID, .worklaneID, .id, (.controlToken // ""), (.workingDirectory // "")] | @tsv' <<<"$panes"
+)
+
+before_worklanes=$(zentty list worklanes --json | jq -c '[.[].id]')
+project_name=$(basename "$selected")
+
+# The nested shell expands $1, not this script.
+# shellcheck disable=SC2016
+zentty grid 1x2 --worklane-id new --focus first -- \
+	/bin/zsh -lic 'cd -P -- "$1" && exec /bin/zsh -l' zsh "$selected"
+
+new_worklane_id=$(
+	zentty list worklanes --json |
+		jq -r --argjson before "$before_worklanes" \
+			'.[] | select(.id as $id | ($before | index($id) | not)) | .id' |
+		head -n 1
+)
+
+[[ -n $new_worklane_id ]] || die "created a worklane but could not identify it"
+zentty worklane rename "$project_name" --id "$new_worklane_id"

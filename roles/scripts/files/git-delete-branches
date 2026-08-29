@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# scripts.aliases: git-db
 
 set -uo pipefail
 

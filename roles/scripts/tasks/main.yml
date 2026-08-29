@@ -1,20 +1,251 @@
 ---
-- name: Setup symlinks for scripts
-  ansible.builtin.file:
-    src: "{{ role_path }}/files"
-    dest: ~/.config/.scripts
-    mode: u=rwx,go=r
-    state: link
+- name: Discover script files
+  ansible.builtin.set_fact:
+    scripts_role_paths: >-
+      {{ query('ansible.builtin.fileglob', role_path ~ '/files/*') | sort }}
 
-- name: Setup user scripts folder
+- name: Read script file metadata
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop: "{{ scripts_role_paths }}"
+  register: scripts_role_stats
+
+- name: Select executable scripts
+  ansible.builtin.set_fact:
+    scripts_role_executables: >-
+      {{ scripts_role_stats.results
+         | selectattr('stat.isreg')
+         | selectattr('stat.executable')
+         | map(attribute='item')
+         | list }}
+
+- name: Read executable scripts
+  ansible.builtin.slurp:
+    src: "{{ item }}"
+  loop: "{{ scripts_role_executables }}"
+  register: scripts_role_contents
+
+- name: Initialize script definitions
+  ansible.builtin.set_fact:
+    scripts_role_definitions: []
+
+- name: Validate script headers
+  vars:
+    script_content: "{{ item.content | b64decode }}"
+    script_header: >-
+      {{ (script_content
+          | regex_findall('\A#![^\n]*(?:\n|$)((?:#[^\n]*(?:\n|$))*)')
+          | first)
+         | default('') }}
+    script_alias_lines: >-
+      {{ script_header
+         | regex_findall('(?m)^# scripts\.aliases:\s*(.*?)\s*$') }}
+    script_platform_lines: >-
+      {{ script_header
+         | regex_findall('(?m)^# scripts\.platforms:\s*(.*?)\s*$') }}
+    script_directive_lines: >-
+      {{ script_content | regex_findall('(?m)^# scripts\.[^\n]*$') }}
+  ansible.builtin.assert:
+    that:
+      - script_content is match('^#![^\n]+')
+      - script_alias_lines | length <= 1
+      - script_platform_lines | length <= 1
+      - >-
+        script_directive_lines | length ==
+        (script_alias_lines | length + script_platform_lines | length)
+    fail_msg: "Invalid script metadata in {{ item.source }}"
+  loop: "{{ scripts_role_contents.results }}"
+  loop_control:
+    label: "{{ item.source }}"
+
+- name: Build script definitions
+  vars:
+    script_content: "{{ item.content | b64decode }}"
+    script_header: >-
+      {{ (script_content
+          | regex_findall('\A#![^\n]*(?:\n|$)((?:#[^\n]*(?:\n|$))*)')
+          | first)
+         | default('') }}
+    script_alias_line: >-
+      {{ (script_header
+          | regex_findall('(?m)^# scripts\.aliases:\s*(.*?)\s*$')
+          | first)
+         | default('') }}
+    script_platform_line: >-
+      {{ (script_header
+          | regex_findall('(?m)^# scripts\.platforms:\s*(.*?)\s*$')
+          | first)
+         | default('') }}
+    script_aliases: >-
+      {{ script_alias_line.split(',')
+         | map('trim')
+         | reject('equalto', '')
+         | list }}
+    script_platforms: >-
+      {{ script_platform_line.split(',')
+         | map('trim')
+         | reject('equalto', '')
+         | list }}
+  ansible.builtin.set_fact:
+    scripts_role_definitions: >-
+      {{ scripts_role_definitions + [{
+           'name': item.source | basename,
+           'source': item.source,
+           'aliases': script_aliases,
+           'platforms': script_platforms
+         }] }}
+  loop: "{{ scripts_role_contents.results }}"
+  loop_control:
+    label: "{{ item.source }}"
+
+- name: Validate script definitions
+  vars:
+    scripts_role_all_names: >-
+      {{ (scripts_role_definitions | map(attribute='name') | list)
+         + (scripts_role_definitions
+            | map(attribute='aliases')
+            | flatten) }}
+    scripts_role_all_platforms: >-
+      {{ scripts_role_definitions
+         | map(attribute='platforms')
+         | flatten }}
+  ansible.builtin.assert:
+    that:
+      - >-
+        scripts_role_all_names
+        | reject('match', '^[a-z0-9][a-z0-9._+-]*$')
+        | length == 0
+      - >-
+        scripts_role_all_names | unique | length ==
+        scripts_role_all_names | length
+      - >-
+        scripts_role_all_platforms
+        | difference(['Darwin', 'Linux'])
+        | length == 0
+    fail_msg: Script names, aliases, or platforms are invalid or duplicated
+
+- name: Select scripts for this platform
+  ansible.builtin.set_fact:
+    scripts_role_applicable: >-
+      {{ scripts_role_definitions
+         | selectattr('platforms', 'equalto', [])
+         | list }}
+
+- name: Add platform-specific scripts
+  ansible.builtin.set_fact:
+    scripts_role_applicable: "{{ scripts_role_applicable + [item] }}"
+  loop: "{{ scripts_role_definitions }}"
+  when:
+    - item.platforms | length > 0
+    - ansible_system in item.platforms
+
+- name: Initialize desired script links
+  ansible.builtin.set_fact:
+    scripts_role_links: []
+
+- name: Add canonical script links
+  ansible.builtin.set_fact:
+    scripts_role_links: >-
+      {{ scripts_role_links + [{
+           'name': item.name,
+           'source': item.source
+         }] }}
+  loop: "{{ scripts_role_applicable }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Add script alias links
+  ansible.builtin.set_fact:
+    scripts_role_links: >-
+      {{ scripts_role_links + [{
+           'name': item.1,
+           'source': item.0.source
+         }] }}
+  loop: >-
+    {{ query(
+         'ansible.builtin.subelements',
+         scripts_role_applicable,
+         'aliases'
+       ) }}
+  loop_control:
+    label: "{{ item.1 }}"
+
+- name: Inspect desired script destinations
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.local/bin/{{ item.name }}"
+    follow: false
+  loop: "{{ scripts_role_links }}"
+  register: scripts_role_destinations
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Reject script destination collisions
+  ansible.builtin.assert:
+    that:
+      - >-
+        (not item.stat.exists and not (item.stat.islnk | default(false))) or
+        (item.stat.islnk and item.stat.lnk_source == item.item.source)
+    fail_msg: >-
+      Refusing to replace {{ item.item.name }} because
+      {{ ansible_env.HOME }}/.local/bin/{{ item.item.name }} is not owned by
+      the scripts role
+  loop: "{{ scripts_role_destinations.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Find installed script symlinks
+  ansible.builtin.find:
+    paths: "{{ ansible_env.HOME }}/.local/bin"
+    file_type: link
+    recurse: false
+  register: scripts_role_installed_links
+  failed_when: false
+
+- name: Inspect installed script symlinks
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+    follow: false
+  loop: "{{ scripts_role_installed_links.files | default([]) }}"
+  register: scripts_role_installed_link_stats
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Create user-local scripts folder
   ansible.builtin.file:
-    path: ~/.bin
+    path: "{{ ansible_env.HOME }}/.local/bin"
     state: directory
-    mode: u=rwx,go=r
+    mode: u=rwx,go=rx
 
-- name: Setup global symlinks for scripts
+- name: Remove stale script links
+  vars:
+    scripts_role_desired_names: >-
+      {{ scripts_role_links | map(attribute='name') | list }}
   ansible.builtin.file:
-    src: "{{ role_path }}/files/git-delete-branches"
-    dest: ~/.bin/gdb
-    mode: u=rwx,go=r
+    path: "{{ item.stat.path }}"
+    state: absent
+  loop: "{{ scripts_role_installed_link_stats.results | default([]) }}"
+  when:
+    - item.stat.islnk | default(false)
+    - item.stat.lnk_source.startswith(role_path ~ '/files/')
+    - item.stat.path | basename not in scripts_role_desired_names
+  loop_control:
+    label: "{{ item.stat.path | default(item.item.path) }}"
+
+- name: Install scripts and aliases
+  ansible.builtin.file:
+    src: "{{ item.source }}"
+    dest: "{{ ansible_env.HOME }}/.local/bin/{{ item.name }}"
     state: link
+  loop: "{{ scripts_role_links }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Remove obsolete scripts config link
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.config/.scripts"
+    state: absent
+
+- name: Remove obsolete user scripts folder
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.bin"
+    state: absent

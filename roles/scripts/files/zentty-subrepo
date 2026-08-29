@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# scripts.aliases: zsr
+# scripts.platforms: Darwin
+
+set -euo pipefail
+
+die() {
+	printf 'zentty-subrepo: %s\n' "$1" >&2
+	exit 1
+}
+
+canonical_directory() {
+	(
+		cd -P -- "$1" 2>/dev/null
+		pwd
+	)
+}
+
+require_command() {
+	command -v "$1" >/dev/null 2>&1 || die "missing dependency: $1"
+}
+
+focus_pane() {
+	local pane_id=$1
+	local pane_token=$2
+
+	zentty pane focus \
+		--window-id "$ZENTTY_WINDOW_ID" \
+		--worklane-id "$ZENTTY_WORKLANE_ID" \
+		--pane-id "$pane_id" \
+		--pane-token "$pane_token"
+}
+
+[[ -n ${ZENTTY_INSTANCE_SOCKET:-} ]] || die "must be run inside a Zentty pane"
+[[ -n ${ZENTTY_WINDOW_ID:-} ]] || die "missing ZENTTY_WINDOW_ID"
+[[ -n ${ZENTTY_WORKLANE_ID:-} ]] || die "missing ZENTTY_WORKLANE_ID"
+[[ $# -le 1 ]] || die "usage: zentty-subrepo [submodule-path]"
+
+for dependency in zentty git fzf jq; do
+	require_command "$dependency"
+done
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || die "not inside a Git repository"
+superproject_root=$(git rev-parse --show-superproject-working-tree 2>/dev/null || true)
+if [[ -n $superproject_root && -d $superproject_root ]]; then
+	repo_root=$(canonical_directory "$superproject_root")
+else
+	repo_root=$(canonical_directory "$repo_root")
+fi
+
+gitmodules_path="$repo_root/.gitmodules"
+submodule_paths=()
+while IFS= read -r submodule_path; do
+	[[ -n $submodule_path ]] || continue
+	[[ -d $repo_root/$submodule_path ]] || continue
+	submodule_paths+=("$submodule_path")
+done < <(
+	git config --file "$gitmodules_path" --get-regexp '^submodule\..*\.path$' 2>/dev/null |
+		awk '{ $1=""; sub(/^ /, ""); print }'
+)
+
+((${#submodule_paths[@]} > 0)) || die "no initialized direct submodules found"
+
+if [[ $# -eq 1 ]]; then
+	selected_relative=$1
+	matched=false
+	for submodule_path in "${submodule_paths[@]}"; do
+		if [[ $selected_relative == "$submodule_path" ]]; then
+			matched=true
+			break
+		fi
+	done
+	$matched || die "not an initialized direct submodule: $selected_relative"
+else
+	selected_relative=$(printf '%s\n' "${submodule_paths[@]}" | fzf) || exit 0
+	[[ -n $selected_relative ]] || exit 0
+fi
+
+selected=$(canonical_directory "$repo_root/$selected_relative") || die "submodule is not a directory: $selected_relative"
+panes=$(zentty pane list --worklane-id "$ZENTTY_WORKLANE_ID" --include-control-token --json)
+
+while IFS=$'\t' read -r pane_id pane_token working_directory; do
+	[[ -n $working_directory ]] || continue
+	canonical=$(canonical_directory "$working_directory") || continue
+	if [[ $canonical == "$selected" ]]; then
+		[[ -n $pane_token ]] || die "matching pane did not provide a control token"
+		focus_pane "$pane_id" "$pane_token"
+		exit 0
+	fi
+done < <(
+	jq -r '.[] | [.id, (.controlToken // ""), (.workingDirectory // "")] | @tsv' <<<"$panes"
+)
+
+# The public split command cannot set the new pane's working directory.
+if ! new_pane_id=$(
+	zentty __tmux-compat split-window -h -c "$selected" -P -F '#{pane_uuid}'
+); then
+	die "Zentty's internal split-window compatibility command failed"
+fi
+
+[[ -n $new_pane_id ]] || die "created a pane but could not identify it"
+new_pane=$(
+	zentty pane list --worklane-id "$ZENTTY_WORKLANE_ID" --include-control-token --json |
+		jq -r --arg id "$new_pane_id" \
+			'.[] | select(.id == $id) | [.id, (.controlToken // "")] | @tsv'
+)
+IFS=$'\t' read -r new_pane_id new_pane_token <<<"$new_pane"
+[[ -n $new_pane_token ]] || die "new pane did not provide a control token"
+focus_pane "$new_pane_id" "$new_pane_token"

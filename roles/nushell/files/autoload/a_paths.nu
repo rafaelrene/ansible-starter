@@ -5,6 +5,7 @@ path add ($env.XDG_CONFIG_HOME | path join "diversion" "bin")
 path add ($env.XDG_CONFIG_HOME | path join "pnpm" "bin")
 path add ($env.XDG_CONFIG_HOME | path join "go" "bin")
 path add ($env.HOME | path join ".spin" "bin")
+path add ($env.HOME | path join ".local" "bin")
 
 if ("/opt/homebrew/bin/brew" | path exists) {
   $env.HOMEBREW_PREFIX = "/opt/homebrew"

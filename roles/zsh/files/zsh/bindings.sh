@@ -1,1 +1,2 @@
-bindkey -s ^b "~/.config/.scripts/git-branches\n"
+bindkey -s ^b "git-branches\n"
+bindkey -s ^f "zentty-project\n"

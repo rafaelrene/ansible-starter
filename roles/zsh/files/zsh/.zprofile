@@ -7,7 +7,7 @@ export SPIN_HOME="$HOME/.spin"
 export HOMEBREW_HOME="/opt/homebrew"
 export OPENJDK_HOME="$HOMEBREW_HOME/opt/openjdk"
 
-export PATH="$OPENJDK_HOME/bin:$SPIN_HOME/bin:$GOPATH/bin:$DIVERSION_HOME/bin:$PNPM_HOME/bin:$VOLTA_HOME/bin:$HOME/.bin:$PATH"
+export PATH="$OPENJDK_HOME/bin:$SPIN_HOME/bin:$GOPATH/bin:$DIVERSION_HOME/bin:$PNPM_HOME/bin:$VOLTA_HOME/bin:$HOME/.local/bin:$PATH"
 export PATH="$HOMEBREW_HOME/bin:$PATH"
 
 # FZF - Theme (Catpuccin Macchiato wo/ bg)
@@ -43,4 +43,3 @@ source $ZSH_HOME/.zsh_secrets 2>/dev/null || true
 # Added by OrbStack: command-line tools and integration
 # This won't be added again if you remove it.
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
-
