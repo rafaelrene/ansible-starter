@@ -119,7 +119,8 @@ new IDs.
 Starting with v2, add one entry for every successful republish, including
 wording-only corrections. Each normal entry contains:
 
-- A version label linked to that immutable `pp` snapshot.
+- A transition label in the form `vN-1 → vN`, with only `vN-1` linked to
+  its immutable `pp` snapshot.
 - The publication timestamp in the local timezone.
 - A concise list of concrete changes from the previous version.
 - The rationale agreed during replanning.
@@ -206,7 +207,8 @@ Do not publish until all checks pass:
 - v1 has matching Created At and Updated At values and no history.
 - A revision preserves Created At and the plan ID, updates Updated At, and has
   the expected history entry.
-- Normal history entries are newest first and link to immutable versions.
+- Normal history entries are newest first and link their previous-version label
+  to the preceding immutable snapshot.
 - No unresolved questions appear.
 - No template markers or instructional comments remain.
 - The document contains no external assets.
