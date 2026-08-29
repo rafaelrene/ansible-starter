@@ -39,23 +39,6 @@ that makes the correct behavior unsurprising.
 - Before sending, ask what makes the writing sound AI-generated and rewrite
   those parts.
 
-## Response notifications
-
-When you are the primary agent running on macOS with shell access, run this as
-the last action before every user-facing final response:
-
-<!-- markdownlint-disable MD013 -->
-
-```sh
-osascript -e 'display notification "A final response is ready." with title "Agent finished" sound name "default"' >/dev/null 2>&1 || true
-```
-
-<!-- markdownlint-enable MD013 -->
-
-Do not notify for commentary, progress updates, or delegated sub-agent
-responses. Notification delivery is best effort. Never delay or block the final
-response if it fails.
-
 ## Plan preferences
 
 - Present plan as a list of actions to take followed by a list of unresolved questions

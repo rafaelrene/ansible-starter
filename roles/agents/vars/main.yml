@@ -5,4 +5,4 @@ agents_skill_dirs:
   - ~/.config/opencode/skills
   - ~/.codex/skills
   - ~/.claude/skills
-  - ~/.config/pi/skills
+  - ~/.pi/agent/skills

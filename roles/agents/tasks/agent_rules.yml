@@ -30,6 +30,6 @@
 - name: Symlink AGENTS.md to Pi
   ansible.builtin.file:
     src: "{{ role_path }}/files/AGENTS.md"
-    dest: ~/.config/pi/AGENTS.md
+    dest: ~/.pi/agent/AGENTS.md
     state: link
     force: true

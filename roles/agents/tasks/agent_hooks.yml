@@ -1,0 +1,60 @@
+---
+- name: Ensure shared executable directory exists
+  ansible.builtin.file:
+    path: ~/.local/bin
+    state: directory
+    mode: u=rwx,go=rx
+
+- name: Symlink shared agent notifier
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/hooks/notification/common.sh"
+    dest: ~/.local/bin/agent-notify
+    state: link
+    force: true
+
+- name: Ensure native hook directories exist
+  loop:
+    - ~/.codex/hooks
+    - ~/.claude/hooks
+    - ~/.config/opencode/plugins
+    - ~/.pi/agent/extensions
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: u=rwx,go=
+
+- name: Symlink native notification adapters
+  loop:
+    - src: codex.sh
+      dest: ~/.codex/hooks/notification.sh
+    - src: claude.sh
+      dest: ~/.claude/hooks/notification.sh
+    - src: opencode.ts
+      dest: ~/.config/opencode/plugins/notification.ts
+    - src: pi.ts
+      dest: ~/.pi/agent/extensions/notification.ts
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/hooks/notification/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+    force: true
+
+- name: Configure Codex notification hooks
+  agent_json_hooks:
+    path: ~/.codex/hooks.json
+    command: "{{ ansible_facts['user_dir'] }}/.codex/hooks/notification.sh"
+    events:
+      - Stop
+      - Interrupt
+      - PermissionRequest
+
+- name: Configure Claude notification hooks
+  agent_json_hooks:
+    path: ~/.claude/settings.json
+    command: "{{ ansible_facts['user_dir'] }}/.claude/hooks/notification.sh"
+    events:
+      - Stop
+      - StopFailure
+      - Notification
+    matchers:
+      Notification: permission_prompt|idle_prompt|elicitation_dialog
