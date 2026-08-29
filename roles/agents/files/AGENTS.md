@@ -22,9 +22,22 @@ Don't introduce machinery because it looks architecturally impressive.
 Understand the real constraint, then fight for the smallest model
 that makes the correct behavior unsurprising.
 
-- Be extremely concise
 - Interview me deeply until we've reached a shared understanding
 - Try to honor my intent in both a minimal and realistic fashion
+
+### Writing preferences
+
+- Write extremely concisely in plain, specific language.
+- Prefer concrete facts, mechanisms, and instructions. Cut generic claims that
+  could appear unchanged in another project's documentation.
+- Cut puffery, filler, vague attribution, canned chatbot phrases, and
+  sycophantic praise.
+- Prefer active voice. Vary sentence rhythm and use a human point of view when
+  it fits.
+- Never use em dashes.
+- Use sentence case for headings.
+- Before sending, ask what makes the writing sound AI-generated and rewrite
+  those parts.
 
 ## Plan preferences
 
