@@ -29,6 +29,10 @@ Before continuing, confirm that:
 If material questions remain, return to planning. Do not publish an incomplete
 plan.
 
+If a detail required for informed approval is unclear, return to planning and
+grill the user about it. Ask one question at a time and include a recommended
+answer. Do not publish vague wording to conceal an unresolved decision.
+
 If the work contains several independently deliverable, pull-request-sized
 tracks, return to planning and split it into smaller plans. Do not turn one
 oversized plan into a project tracker.
@@ -141,10 +145,29 @@ boundaries where they help implementation.
 
 Keep the plan compact. Implementation steps are not checkboxes.
 
-Add code examples or pseudo-diffs when they make APIs, schemas, configuration,
-data flow, or structural changes easier to understand. Skip examples that repeat
-the prose. Label each example as exact code, pseudo-code, or pseudo-diff, and
-include a filename or language label when known.
+## Be specific
+
+Write every section at the greatest useful specificity supported by the agreed
+plan and the available evidence. The user must be able to tell exactly what
+they are approving or rejecting.
+
+- Name exact files, components, fields, commands, values, behaviors, boundaries,
+  and user-visible text when known.
+- Replace vague verbs such as “update,” “handle,” or “improve” with the concrete
+  operation and its observable result.
+- Show exact, copy-ready code when the final implementation is settled and
+  localized. Include the context needed to understand it, then explain what the
+  code does and why it produces the desired behavior.
+- Use pseudo-code or pseudo-diffs only when omitted context, repetitive changes,
+  or a deliberately unsettled implementation choice would make exact code
+  misleading. Label them and identify what is illustrative rather than exact.
+- Use prose for unchanged context and mechanical work, but keep the description
+  concrete enough to verify.
+
+Do not manufacture precision. When a detail is intentionally left flexible,
+label it **Implementation discretion**, state the permitted choices or boundary,
+and explain why choosing within that boundary cannot change the approved
+behavior. Unlabelled vagueness is not implementation discretion.
 
 ## Checkboxes
 
