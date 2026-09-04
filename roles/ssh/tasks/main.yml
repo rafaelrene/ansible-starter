@@ -6,19 +6,23 @@
     file_type: file
     recurse: false
 
-- name: Check if SSH keys are setup
-  register: ssh_keys_check
-  ansible.builtin.stat:
-    path: "~/.ssh/{{ item }}"
-  loop: "{{ ssh_files.files | map(attribute='path') | map('regex_replace', '^.*/(.*)$', '\\1') | list }}"
+- name: Create SSH directory
+  become: true
+  become_user: "{{ ansible_facts['user_id'] }}"
+  ansible.builtin.file:
+    path: "{{ ansible_facts['user_dir'] }}/.ssh"
+    state: directory
+    mode: "0700"
+    owner: "{{ ansible_facts['user_id'] }}"
 
-- name: Copy SSH keys
-  when: ssh_keys_check.results | selectattr('stat.exists', 'equalto', false) | list | length > 0
+- name: Copy SSH files
   become: true
   become_user: "{{ ansible_facts['user_id'] }}"
   ansible.builtin.copy:
-    src: "{{ role_path }}/files/"
-    dest: ~/.ssh/
-    mode: u+rw
-    directory_mode: u+rwx
+    src: "{{ item.path }}"
+    dest: "{{ ansible_facts['user_dir'] }}/.ssh/{{ item.path | basename }}"
+    mode: "{{ '0644' if item.path.endswith('.pub') or (item.path | basename) == 'config' else '0600' }}"
     owner: "{{ ansible_facts['user_id'] }}"
+  loop: "{{ ssh_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"

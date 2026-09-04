@@ -9,3 +9,15 @@ Host github.com
 Host gitlab.com
   AddKeysToAgent yes
   IdentityFile ~/.ssh/personal
+
+Host othinus-personal
+  HostName 192.168.86.136
+  User othinus
+  IdentityFile ~/.ssh/personal
+  IdentitiesOnly yes
+
+Host othinus
+  HostName 192.168.86.136
+  User othinus
+  IdentityFile ~/.ssh/othinus
+  IdentitiesOnly yes
