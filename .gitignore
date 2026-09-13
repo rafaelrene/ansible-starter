@@ -8,3 +8,7 @@ devenv.local.yaml
 
 # direnv
 .direnv
+
+# Python
+__pycache__/
+*.py[cod]
