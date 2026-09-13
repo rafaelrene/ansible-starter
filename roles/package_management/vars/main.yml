@@ -8,7 +8,6 @@ package_management_brew_formula_packages:
   - age
   - antidote
   - btop
-  - cirruslabs/cli/tart
   - direnv
   - fd
   - fzf
