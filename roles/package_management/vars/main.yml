@@ -60,8 +60,6 @@ package_management_brew_formula_packages:
   - homebrew/cask/orbstack
   - homebrew/cask/proton-drive
   - homebrew/cask/proton-pass
-  - raf/codearts-tap/coppelia
-  - raf/codearts-tap/zentty
   - homebrew/cask/raycast
   - homebrew/cask/rustdesk
   - homebrew/cask/shottr
@@ -78,6 +76,7 @@ package_management_brew_formula_packages:
   - homebrew/cask/whatsapp
   - homebrew/cask/yaak
   - homebrew/cask/zen
+  - homebrew/cask/zentty
 
 package_management_arch_packages:
   - aur/anytype-bin
