@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Reload when the symlinked listener changes: {{ lookup('ansible.builtin.file', role_path ~ '/files/hooks/notification/othinus-listen.sh') | hash('sha256') }} -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>dev.rafr.othinus-agent-notify</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>{{ ansible_facts['user_dir'] | e }}/.local/bin/othinus-agent-notify-listen</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>LimitLoadToSessionType</key><string>Aqua</string>
+  <key>ProcessType</key><string>Background</string>
+  <key>ExitTimeOut</key><integer>5</integer>
+</dict>
+</plist>

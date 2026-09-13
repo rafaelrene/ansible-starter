@@ -58,3 +58,69 @@
       - Notification
     matchers:
       Notification: permission_prompt|idle_prompt|elicitation_dialog
+
+- name: Symlink Othinus notification listener
+  ansible.builtin.file:
+    src: "{{ role_path }}/files/hooks/notification/othinus-listen.sh"
+    dest: ~/.local/bin/othinus-agent-notify-listen
+    state: link
+    force: true
+  register: agents_notify_listener
+
+- name: Ensure LaunchAgents directory exists
+  ansible.builtin.file:
+    path: ~/Library/LaunchAgents
+    state: directory
+    mode: "0755"
+
+- name: Render Othinus notification LaunchAgent
+  ansible.builtin.template:
+    src: dev.rafr.othinus-agent-notify.plist.j2
+    dest: ~/Library/LaunchAgents/dev.rafr.othinus-agent-notify.plist
+    mode: "0644"
+    validate: /usr/bin/plutil -lint %s
+  register: agents_notify_plist
+
+- name: Read login user ID
+  ansible.builtin.command:
+    argv: [/usr/bin/id, -u]
+  register: agents_notify_uid
+  changed_when: false
+  check_mode: false
+
+- name: Inspect Othinus notification LaunchAgent
+  ansible.builtin.command:
+    argv:
+      - /bin/launchctl
+      - print
+      - "gui/{{ agents_notify_uid.stdout }}/dev.rafr.othinus-agent-notify"
+  register: agents_notify_service
+  changed_when: false
+  failed_when: agents_notify_service.rc not in [0, 113]
+  check_mode: false
+
+# Reload inline so installation and later changes share the same ordering.
+- name: Unload changed Othinus notification LaunchAgent  # noqa: no-handler
+  ansible.builtin.command:
+    argv:
+      - /bin/launchctl
+      - bootout
+      - "gui/{{ agents_notify_uid.stdout }}/dev.rafr.othinus-agent-notify"
+  changed_when: true
+  when:
+    - agents_notify_service.rc == 0
+    - agents_notify_listener.changed or agents_notify_plist.changed
+
+- name: Load Othinus notification LaunchAgent  # noqa: no-handler
+  ansible.builtin.command:
+    argv:
+      - /bin/launchctl
+      - bootstrap
+      - "gui/{{ agents_notify_uid.stdout }}"
+      - >-
+        {{ ansible_facts['user_dir']
+        }}/Library/LaunchAgents/dev.rafr.othinus-agent-notify.plist
+  changed_when: true
+  when: >-
+    agents_notify_service.rc != 0 or
+    agents_notify_listener.changed or agents_notify_plist.changed
