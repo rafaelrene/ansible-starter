@@ -19,7 +19,7 @@ local function get_eslint_root(fname)
   return eslint_root(fname) or vim.fs.dirname(vim.fs.find(".git", { path = fname, upward = true })[1])
 end
 
-local function get_tsgo_root(bufnr, on_dir)
+local function get_tsc_root(bufnr, on_dir)
   local root_markers = { { "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lockb", "bun.lock" }, { ".git" } }
   local deno_root = vim.fs.root(bufnr, { "deno.json", "deno.jsonc" })
   local deno_lock_root = vim.fs.root(bufnr, { "deno.lock" })
@@ -52,10 +52,11 @@ return {
         ts_ls = {
           enable = false,
         },
-        tsgo = {
-          -- Our custom root_dir bypasses lspconfig's tsc/tsgo binary detection.
-          cmd = { "tsgo", "--lsp", "--stdio" },
-          root_dir = get_tsgo_root,
+        tsc = {
+          -- Allow projects with deno.json but no deno.lock to use TypeScript.
+          -- Set cmd explicitly because the custom root skips binary detection.
+          cmd = { "tsc", "--lsp", "--stdio" },
+          root_dir = get_tsc_root,
         },
         vtsls = {
           settings = {

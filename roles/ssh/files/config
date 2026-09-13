@@ -12,6 +12,6 @@ Host gitlab.com
 
 Host othinus
   HostName 192.168.86.136
-  User othinus
+  User raf
   IdentityFile ~/.ssh/othinus
   IdentitiesOnly yes
