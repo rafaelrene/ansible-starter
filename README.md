@@ -43,10 +43,6 @@ choose **Settings → Thread notifications → Notifications with sound** and
 allow notification permission. Keep T3Code open. Use the desktop app or HTTPS;
 plain HTTP works only on localhost.
 
-Run `bash ./run.sh` on the Mac to remove the old agent hooks, notifier, and
-SSH journal listener, and unload its LaunchAgent. Other agent hooks and
-settings are preserved.
-
 ## Secrets
 
 For things like adding new ssh keys,

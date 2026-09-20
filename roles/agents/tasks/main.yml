@@ -13,7 +13,3 @@
 
 - name: Distribute skills to all agents
   ansible.builtin.include_tasks: agent_skills.yml
-
-- name: Remove legacy macOS notification hooks
-  ansible.builtin.include_tasks: agent_hooks.yml
-  when: ansible_facts['os_family'] == 'Darwin'
