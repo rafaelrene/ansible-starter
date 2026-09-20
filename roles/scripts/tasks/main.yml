@@ -240,13 +240,3 @@
   loop: "{{ scripts_role_links }}"
   loop_control:
     label: "{{ item.name }}"
-
-- name: Remove obsolete scripts config link
-  ansible.builtin.file:
-    path: "{{ ansible_facts['env']['HOME'] }}/.config/.scripts"
-    state: absent
-
-- name: Remove obsolete user scripts folder
-  ansible.builtin.file:
-    path: "{{ ansible_facts['env']['HOME'] }}/.bin"
-    state: absent
