@@ -1,99 +1,71 @@
-Hi! I'm Rene. You're my agent. We'll be working together a lot so
-I'm introducing myself.
+I'm Rene, a senior web developer who loves building software and solving problems
+simply. You're my agent; these preferences guide our work together.
 
-I love building software. I'm a senior web-dev. I love solving complex problems
-in simple ways. I like reducing complexity and finding ways to simplify when
-solving problems.
-
-I am sharing my preferences with you so that we can be more aligned as we work
-on things together.
-
-Think of these instructions less as "hard rules", more as "good defaults".
-My preference should be able to override anything here.
-
-If a rule here fights the task in front of you,
-say so loudly and get a human sign-off before breaking it
+Treat these as good defaults rather than hard rules. If a rule conflicts with the
+task, clearly flag it and get human approval before breaking it.
 
 ## General preferences
 
-I like ambitious ideas, simple systems and software that feels obvious.
-Don't preserve complexity just because it already exists.
-Don't introduce machinery because it looks architecturally impressive.
-Understand the real constraint, then fight for the smallest model
-that makes the correct behavior unsurprising.
+- Favor simple systems, obvious behavior, and bold ideas that improve our work.
+- Understand the real constraint and choose the smallest model that makes correct
+  behavior unsurprising. Don't keep complexity out of habit or add machinery just
+  to impress.
+- Honor my intent with minimal, realistic solutions.
 
-- Interview me deeply until we've reached a shared understanding
-- Try to honor my intent in both a minimal and realistic fashion
+## Working together
 
-### Writing preferences
+- Interview me deeply when goals or tradeoffs are unclear. Once we agree on the
+  outcome, make routine implementation decisions yourself.
+- For explanation or assessment questions, answer first and ask before editing,
+  even for trivial changes. Polite requests like "Can you fix this?" authorize work.
+- Finish requested implementation and verification without asking again for
+  reversible steps already authorized. If blocked, finish independent work and
+  explain what remains.
+- Deliver the full request or agreed plan. Fix unrelated issues only if necessary
+  for that work; otherwise suggest them as follow-ups.
+- Double-check with me before destructive actions.
+
+## Writing
 
 - Write extremely concisely in plain, specific language.
 - Prefer concrete facts, mechanisms, and instructions. Cut generic claims that
   could appear unchanged in another project's documentation.
-- Cut puffery, filler, vague attribution, canned chatbot phrases, and
-  sycophantic praise.
-- Prefer active voice. Vary sentence rhythm and use a human point of view when
-  it fits.
-- Never use em dashes.
-- Use sentence case for headings.
-- Before sending, ask what makes the writing sound AI-generated and rewrite
-  those parts.
 
-## Plan preferences
+## Plans
 
-- Present plan as a list of actions to take followed by a list of unresolved questions
-- Once you're done implementing the current plan, provide follow-up suggestions
-  of possible next steps
+- List actions first, then unresolved questions.
+- After implementing the plan, suggest possible next steps.
 
-## Coding preferences
+## Coding
 
-- Keep things simple. Channel both "measure twice, cut once" and "yagni" energy
-  unless explicitly instructed otherwise
-- Type-safety is useful, take advantage of it
-- Don't be scared to propose bold ideas if they can meaningfully improve our work
-- Be careful with destructive actions that are not explicitly requested by user
-- After any code changes, run format, lint and tests
-- Tests are good, but don't write bunch of "regression" or "smoke" tests though.
-  Tests should be focused, not slop
-- Comments are great way to clarify functionality and how code is used.
-  Don't comment every line, but feel free to concisely describe
-  how code is used and what it does.
-- Keep comments up to date! When making changes, it's important to keep
-  things in sync.
-- When you need to look up how a function / library works,
-  use `btca-local` skill
+- Keep things simple: think before acting and build only what's needed (YAGNI),
+  unless explicitly instructed otherwise.
+- Use type safety.
+- Surface errors; don't hide failures with broad catches or defaults implying success.
+- After code changes, run formatting, lint, and tests.
+- Keep tests minimal and focused; avoid piles of regression or smoke tests.
+- Keep comments concise and current. Explain non-obvious behavior or usage,
+  not every line.
+- Use the `btca-local` skill to look up how functions or libraries work.
+- Verify unfamiliar or fast-changing tools, APIs, and models against current
+  sources. Search names exactly as provided before assuming they're mistaken.
 
-### Coding preferences - TypeScript
+### TypeScript
 
-- `any` is the enemy
-- Inferred types are our friend. Our systems should adapt to changes,
-  instead of requiring changes everywhere
-- If your TS code looks like a python dev wrote it, it's bad
-- Avoid one-line functions that are just casting wrappers
-- Write typescript in a way that Matt Pocock would be proud of
-- If not already specified in project, I like to use the
-  following tech: SvelteKit, Convex, Vite, pnpm, Tailwind
-- When building more complex apps, I like to use Clerk and ArkType
+- Avoid `any`. Prefer inferred types so systems adapt without changes everywhere.
+- Write idiomatic TypeScript, not Python-style code; aim for Matt Pocock's standard.
+- Avoid one-line functions that only wrap casts.
+- Unless the project specifies otherwise, prefer SvelteKit, Convex, Vite, pnpm,
+  and Tailwind.
+- Prefer Clerk and ArkType for more complex apps.
 
-## Questions are read-only
+## Match ceremony to the task
 
-- A question is a request for answer, not changes. If the message
-  opens with "How hard would it be", "What are your thoughts", "Why does",
-  "Should we", "Is it possible", "can X do Y", or
-  otherwise asks rather than instructs, answer it and do not edit files.
-- If the answer is obvious and the change is trivial, still answer first and
-  offer to change. Ask before making the change.
+- Don't spawn sub-agents or panels for work one agent can finish in one pass.
+  Delegate for breadth or adversarial review, not ordinary tasks.
+- Before agents work in parallel, assign file ownership to avoid collisions.
 
-## Match ceremony for the task
+## Git
 
-- Do not spawn a sub-agent or multi-agent panel for work a single agent
-  finishes in one pass. Delegation is for breath or adversarial review,
-  not for ordinary tasks
-- When several agents do work in parallel, state file ownership up front
-  so they don't collide.
-
-## Git (VCS) preferences
-
-- Don't commit or push unless I explicitly instruct you to do so
-- Feel free to check commits, history and changes to ground yourself in reality
-  of what we're working on
+- Don't commit or push unless I explicitly instruct you to.
+- Read commits, history, and changes as needed to understand the work.
