@@ -1,5 +1,5 @@
 ---
-- name: System Setup
+- name: Set up macOS
   hosts: all
   roles:
     - git

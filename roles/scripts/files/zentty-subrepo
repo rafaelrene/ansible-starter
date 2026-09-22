@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # scripts.aliases: zsr
-# scripts.platforms: Darwin
 
 set -euo pipefail
 

@@ -40,19 +40,13 @@
     script_alias_lines: >-
       {{ script_header
          | regex_findall('(?m)^# scripts\.aliases:\s*(.*?)\s*$') }}
-    script_platform_lines: >-
-      {{ script_header
-         | regex_findall('(?m)^# scripts\.platforms:\s*(.*?)\s*$') }}
     script_directive_lines: >-
       {{ script_content | regex_findall('(?m)^# scripts\.[^\n]*$') }}
   ansible.builtin.assert:
     that:
       - script_content is match('^#![^\n]+')
       - script_alias_lines | length <= 1
-      - script_platform_lines | length <= 1
-      - >-
-        script_directive_lines | length ==
-        (script_alias_lines | length + script_platform_lines | length)
+      - script_directive_lines | length == script_alias_lines | length
     fail_msg: "Invalid script metadata in {{ item.source }}"
   loop: "{{ scripts_role_contents.results }}"
   loop_control:
@@ -71,18 +65,8 @@
           | regex_findall('(?m)^# scripts\.aliases:\s*(.*?)\s*$')
           | first)
          | default('') }}
-    script_platform_line: >-
-      {{ (script_header
-          | regex_findall('(?m)^# scripts\.platforms:\s*(.*?)\s*$')
-          | first)
-         | default('') }}
     script_aliases: >-
       {{ script_alias_line.split(',')
-         | map('trim')
-         | reject('equalto', '')
-         | list }}
-    script_platforms: >-
-      {{ script_platform_line.split(',')
          | map('trim')
          | reject('equalto', '')
          | list }}
@@ -91,8 +75,7 @@
       {{ scripts_role_definitions + [{
            'name': item.source | basename,
            'source': item.source,
-           'aliases': script_aliases,
-           'platforms': script_platforms
+           'aliases': script_aliases
          }] }}
   loop: "{{ scripts_role_contents.results }}"
   loop_control:
@@ -105,10 +88,6 @@
          + (scripts_role_definitions
             | map(attribute='aliases')
             | flatten) }}
-    scripts_role_all_platforms: >-
-      {{ scripts_role_definitions
-         | map(attribute='platforms')
-         | flatten }}
   ansible.builtin.assert:
     that:
       - >-
@@ -118,26 +97,7 @@
       - >-
         scripts_role_all_names | unique | length ==
         scripts_role_all_names | length
-      - >-
-        scripts_role_all_platforms
-        | difference(['Darwin', 'Linux'])
-        | length == 0
-    fail_msg: Script names, aliases, or platforms are invalid or duplicated
-
-- name: Select scripts for this platform
-  ansible.builtin.set_fact:
-    scripts_role_applicable: >-
-      {{ scripts_role_definitions
-         | selectattr('platforms', 'equalto', [])
-         | list }}
-
-- name: Add platform-specific scripts
-  ansible.builtin.set_fact:
-    scripts_role_applicable: "{{ scripts_role_applicable + [item] }}"
-  loop: "{{ scripts_role_definitions }}"
-  when:
-    - item.platforms | length > 0
-    - ansible_facts['system'] in item.platforms
+    fail_msg: Script names or aliases are invalid or duplicated
 
 - name: Initialize desired script links
   ansible.builtin.set_fact:
@@ -150,7 +110,7 @@
            'name': item.name,
            'source': item.source
          }] }}
-  loop: "{{ scripts_role_applicable }}"
+  loop: "{{ scripts_role_definitions }}"
   loop_control:
     label: "{{ item.name }}"
 
@@ -164,7 +124,7 @@
   loop: >-
     {{ query(
          'ansible.builtin.subelements',
-         scripts_role_applicable,
+         scripts_role_definitions,
          'aliases'
        ) }}
   loop_control:

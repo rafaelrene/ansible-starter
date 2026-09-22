@@ -1,6 +1,6 @@
 This repository is Rene's Ansible starter for provisioning his development
-environment on macOS and WSL. `main.yml` applies an ordered set of roles to the
-local machine.
+environment on his Apple Silicon Mac. `main.yml` applies an ordered set of roles
+to the local machine.
 
 ## Core principles
 

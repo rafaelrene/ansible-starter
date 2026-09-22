@@ -1,22 +1,17 @@
 # Ansible Starter
 
-This is my starter repo where I have all the setup I need to get up and running quickly.
+This repository provisions my Apple Silicon Mac using Homebrew at `/opt/homebrew`.
 
 ## Requirements
 
-### macOS
-
-- [Xcode Command Line Tools](https://mac.install.guide/commandlinetools/index.html) - Command line tools for MacOS
+- [Xcode Command Line Tools](https://mac.install.guide/commandlinetools/index.html)
+  - Command line tools for macOS
 - [Git](https://git-scm.com) - Git is a free and open source distributed version
   control system designed to handle everything from small to very large projects
   with speed and efficiency.
-- [Homebrew](https://brew.sh/) - The Missing Package Manager for macOS (or Linux)
+- [Homebrew](https://brew.sh/) - Package manager for macOS
 - [Ansible](https://ansible.com) - simple, agentless and powerful open source
   IT automation
-
-### Windows
-
-Use WSL. So far I haven't had the time to configure WSL, so we just assume arch linux.
 
 ## How to run
 
@@ -47,7 +42,9 @@ plain HTTP works only on localhost.
 
 For things like adding new ssh keys,
 committing private keys without encryption is a bad idea.
-We can use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) to encrypt secrets.
+We can use
+[Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html)
+to encrypt secrets.
 
 To encrypt a secret, run:
 
