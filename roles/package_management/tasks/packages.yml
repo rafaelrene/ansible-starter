@@ -1,11 +1,43 @@
 ---
-- name: Tap Homebrew Taps
-  community.general.homebrew_tap:
-    name: "{{ package_management_brew_taps }}"
-    state: present
+- name: Install and upgrade Brewfile packages
+  ansible.builtin.command:
+    argv:
+      - /opt/homebrew/bin/brew
+      - bundle
+      - install
+      - --upgrade
+      - "--file={{ role_path }}/files/Brewfile"
+  register: package_management_bundle_install
+  changed_when: >-
+    package_management_bundle_install.stdout is
+    search('(?m)^(Installing|Upgrading|Tapping) ')
 
-- name: Install Homebrew Formulae
-  community.general.homebrew:
-    update_homebrew: true
-    state: present
-    name: "{{ package_management_brew_formula_packages }}"
+- name: Remove Homebrew packages absent from the Brewfile
+  ansible.builtin.command:
+    argv:
+      - /opt/homebrew/bin/brew
+      - bundle
+      - cleanup
+      - --force
+      - --formula
+      - --cask
+      - --tap
+      - "--file={{ role_path }}/files/Brewfile"
+  register: package_management_bundle_cleanup
+  changed_when: >-
+    package_management_bundle_cleanup.stdout | length > 0 or
+    'Untapping ' in package_management_bundle_cleanup.stderr
+
+# Bundle cleanup can return success even when an individual uninstall fails.
+- name: Verify no unlisted Homebrew packages remain
+  ansible.builtin.command:
+    argv:
+      - /opt/homebrew/bin/brew
+      - bundle
+      - cleanup
+      - --formula
+      - --cask
+      - --tap
+      - "--file={{ role_path }}/files/Brewfile"
+    stdin: ""
+  changed_when: false
